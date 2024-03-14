@@ -387,7 +387,7 @@ def plot_AA(AA, STEP, local, dep):
     ax.set_ylim(0, 24)
     ax.grid("on")
     ax.set_aspect(5)
-    print 'actions:', l
+    print ('actions:', l)
     ax.legend(ncol=3, shadow=True)
     pyplot.savefig('action.pdf',bbox_inches='tight')
 
@@ -402,7 +402,7 @@ T=[0,]*N # to count the consecutive time of requesting
 horizon = [5,]*N
 ACT = ['action',]*N
 DELAY = 10
-T_bound = 200
+T_bound = 5
 discrete_plan = [0,]*N # [[k, plan], [k,plan]]
 com_radius= 20
 neighbor = dict()
@@ -447,7 +447,7 @@ global_com_bound = 5
 
 ##################### initial plan synthesis
 for i in xrange(0, N):
-    print 'Agent A%s' %(i)
+    print ('Agent A%s' %(i))
     Planner[i].optimal(segment='prefix')
     #Planner[i].optimal()
 
@@ -462,7 +462,7 @@ while(tt<T_bound):
     C = []
     A = []
     neighbor = dict()
-    print 'Time %s:' %tt
+    print ('Time %s:' %tt)
     #print 'agent positions', X
     for i in xrange(0, N):
         Planner[i].pose = X[i]
@@ -545,24 +545,24 @@ while(tt<T_bound):
                         else:
                             print ('agent%s start doing assisting action %s\n' 
                                %(str(i+1), str(act)))
-                            print Planner[i].contract_time
+                            print (Planner[i].contract_time)
                         if Planner[i].contract_time>0:
                             K[i] = int(round(Planner[i].contract_time/STEP))
                             ACT[i] = act
                         else:
-                            print Planner[i].contract_time
-                            print 'before the contract_time finishes, it has to be delayed'
+                            print (Planner[i].contract_time)
+                            print ('before the contract_time finishes, it has to be delayed')
                             # delay the cooperation by wait
                             Planner[i].delay_cooperation(DELAY, SPEED[i])
                     else:
                         # current action done
                         #print Planner[i].contract_time
-                        print '********************************'
-                        print '********************************'
+                        print ('********************************')
+                        print ('********************************')
                         print ('agent%s: action %s done at %s s\n' 
                            %(str(i+1), str(act), str(tt)))
-                        print '********************************'
-                        print '********************************'
+                        print ('********************************')
+                        print ('********************************')
                         if Planner[i].segment == 'loop':
                             if f[i] == 0:
                                 print ('agent%s finished its task\n'  %(str(i+1)))
@@ -597,17 +597,17 @@ while(tt<T_bound):
     # choose one agent to serve
     agents_req = [a for a,b in Request.iteritems() if b]
     if agents_req:
-        print '**************'
-        print 'agents requested at time %s:' %tt, agents_req
+        print ('**************')
+        print ('agents requested at time %s:' %tt, agents_req)
         choosen_agent = random.choice(agents_req)
         #choosen_agent = agents_req[0]
         request = Request[choosen_agent]
-        print 'choosen', choosen_agent, 'on', request
-        print '**************'
+        print ('choosen', choosen_agent, 'on', request)
+        print ('**************')
         Reply = dict()
         for i in neighbor[choosen_agent]:
             # second layer communication 
-            print 'local coordination'
+            print ('local coordination')
             if (i!=choosen_agent):
                 Reply[i] = Planner[i].evaluate_request(request, alpha=1)
                 #print 'reply from agent %s' %str(i+1) , Reply[i]
@@ -615,11 +615,11 @@ while(tt<T_bound):
                 #com_counter = 3
         Confirm, time = Planner[choosen_agent].confirmation(request, 
             Reply)
-        print 'Confirmation',Confirm
+        print ('Confirmation',Confirm)
         #print 'choosen_agent contract time', Planner[choosen_agent].contract_time
         #print '**************'
         if time>0:
-            print 'local coordination successful'
+            print ('local coordination successful')
             for i in Reply.keys():
                 if (i!=choosen_agent):
                     Planner[i].adapt_plan(Confirm[i])
@@ -631,7 +631,7 @@ while(tt<T_bound):
                 Reply = dict()          
                 for i in LEADER.keys():
                     # first layer communication 
-                    print 'global communication'
+                    print ('global communication')
                     if (i!=choosen_agent):
                         Reply[i] = Planner[i].evaluate_request(request, alpha=1)
                         #print 'reply from agent %s' %str(i+1) , Reply[i]
@@ -645,11 +645,11 @@ while(tt<T_bound):
                 global_com_bound = random.randint(3,8) 
                 Confirm = dict()                  
                 Confirm, time = Planner[choosen_agent].confirmation(request, Reply)
-                print 'Confirmation', Confirm
+                print ('Confirmation', Confirm)
                 #print 'choosen_agent contract time', Planner[choosen_agent].contract_time
                 #print '**************'
                 if time>0:
-                    print 'golobal coordination successful'
+                    print ('golobal coordination successful')
                     for i in Reply.keys():
                         if (i!=choosen_agent):
                             Planner[i].adapt_plan(Confirm[i])
@@ -674,10 +674,10 @@ while(tt<T_bound):
 
 
 
-XX = list()
-for i in xrange(0,N):
-    XX.append(Planner[i].traj)
+#XX = list()
+#for i in xrange(0,N):
+    #XX.append(Planner[i].traj)
 #figure = visualize_traj(R_dict, S, Obs, G, XX, CC, AA, 'test', WS=None)
-movie_clips(R_dict, S, Obs, G,  XX, CC, AA, L=3, WS=None)
-plot_CC(CC, STEP)
-plot_AA(AA, STEP, LOCAL, dep)
+#movie_clips(R_dict, S, Obs, G,  XX, CC, AA, L=3, WS=None)
+#plot_CC(CC, STEP)
+#plot_AA(AA, STEP, LOCAL, dep)

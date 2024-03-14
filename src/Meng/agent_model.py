@@ -917,4 +917,4 @@ def route_ws(Ws_ts, x0, goal):
 
             
 
-
+print(dep)
