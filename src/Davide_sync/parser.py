@@ -1,4 +1,3 @@
-
 from lexer import get_lexer
 import itertools
 

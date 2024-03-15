@@ -7,13 +7,14 @@ tokens = (
         "TRUE",
         "LPAREN", "RPAREN")
 
-t_SYMBOL = r"[a-z]+[a-z0-9]*"
+t_SYMBOL = r"[a-z]+[a-z0-9_]*"
 t_TRUE   = r"1"
 t_AND    = r"&&"
 t_OR     = r"\|\|"
 t_NOT    = r"!"
 t_LPAREN = r"\("
 t_RPAREN = r"\)"
+
 t_ignore = " "
 
 def t_error(t):

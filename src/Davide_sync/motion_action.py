@@ -37,7 +37,6 @@ class MotActModel2(DiGraph):
         return prod_node 
     
     def build_full(self):
-        # note that self-transition in TS is a motion.
         for reg in self.graph['region'].nodes():
             for act in self.graph['action'].action.keys():
                 # adding actions transitions
@@ -49,14 +48,14 @@ class MotActModel2(DiGraph):
                             # add edge from None to action
                             self.add_edge((reg, act), prod_node_to, weight=self.graph['action'].action[act_to][0], label= act_to, marker= 'visited')
                         # add edge from action to None
-                        self.add_edge(prod_node_to, (reg, 'None'), weight=self.graph['action'].action['None'][0], label= 'goto', marker= 'visited')
+                        self.add_edge(prod_node_to, (reg, 'None'), weight=self.graph['action'].action['None'][0], label= 'none', marker= 'visited')
                 # adding motions transitions
                 for reg_to in self.graph['region'].successors(reg):
                     prod_node_to = self.composition(reg_to, 'None')
                     # add edge between regions (actions None for both nodes)
-                    self.add_edge((reg, 'None'), prod_node_to, weight=self.graph['region'][reg][reg_to]['weight'], label= 'goto', marker= 'visited')
+                    self.add_edge((reg, 'None'), prod_node_to, weight=self.graph['region'][reg][reg_to]['weight'], label= 'goto_'+str(reg_to), marker= 'visited')
             # adding self transitions (none action to waste time)
-            self.add_edge((reg, 'None'), (reg, 'None'), weight=self.graph['action'].action['None'][0], label= 'goto', marker= 'visited')                
+            self.add_edge((reg, 'None'), (reg, 'None'), weight=self.graph['action'].action['None'][0], label= 'none', marker= 'visited')                
             
                 
                 

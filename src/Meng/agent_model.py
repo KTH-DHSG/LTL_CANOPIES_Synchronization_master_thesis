@@ -731,7 +731,7 @@ dep['d43'] = set(['hda23', 'hdb33'])
 a42_action = ActionModel(a42_action_dict)
 a42_hard_task = ' (<>( p42 && <> (r6 && d42)))  && (<>( p43 && <> (r1 && d43))) && ([]<> r0)'
 a42_soft_task = None
-a42_model = MotActModel(a42_motion, a42_action)
+k
 a42_planner = ltl_planner(a42_model, a42_hard_task, a42_soft_task)
 
 

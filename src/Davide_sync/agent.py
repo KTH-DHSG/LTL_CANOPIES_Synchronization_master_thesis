@@ -106,9 +106,9 @@ model2 = MotActModel2(motion2, actions)
 #print('---')
 model2.build_full()
 #print(model2.graph['region'].nodes())
-#for edge in model2.edges(data=True):
-    #print(edge)
-print(model2.graph)
+for edge in model2.edges(data=True):
+    print(edge)
+#print(model2)
 
 D= model2
 #D = motion2
@@ -120,4 +120,4 @@ nx.draw_networkx_nodes(D, pos, ax=ax, node_size=500, node_color="#acddc5", edgec
 nx.draw_networkx_labels(D, pos, ax=ax, font_weight='bold', font_size=12)
 nx.draw_networkx_edges(D, pos, ax=ax, edgelist=D.edges(data=True), edge_color="r", connectionstyle="arc3,rad=0.1")
 nx.draw_networkx_edge_labels(D, pos, ax=ax, edge_labels={(u, v): d['label'] for u, v, d in D.edges(data=True)}, label_pos=0.33)
-#plt.show()
+plt.show()
