@@ -179,7 +179,6 @@ def main():
         executor = MultiThreadedExecutor() 
         executor.add_node(bool_mic_node) 
         executor.spin()        
-        #rclpy.spin(bool_mic_node, executor)
     except ValueError as e:
         rclpy.logging.get_logger("bool_cmd_hil_mic").error("Boolean Command HIL MIC: %s" %(e))
         sys.exit(0)

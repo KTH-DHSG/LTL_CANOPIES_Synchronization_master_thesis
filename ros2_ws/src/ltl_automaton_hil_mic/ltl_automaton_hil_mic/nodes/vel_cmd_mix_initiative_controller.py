@@ -292,7 +292,9 @@ def main():
     rclpy.init()        
     try: 
         vel_mic_node = VelCmdMixer()          
-        rclpy.spin(vel_mic_node)
+        executor = MultiThreadedExecutor() 
+        executor.add_node(vel_mic_node) 
+        executor.spin() 
     except ValueError as e:
         rclpy.logging.get_logger("vel_cmd_hil_mic").error("Velocity Command HIL MIC: %s" %(e))
         sys.exit(0)
