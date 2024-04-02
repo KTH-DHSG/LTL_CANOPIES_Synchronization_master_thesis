@@ -458,13 +458,7 @@ class MainPlanner(Node):
         
         # Return the message content
         return future.result()
-    
-def spin_srv(executor):
-    try: 
-        executor.spin()
-    except rclpy.executors.ExternalShutdownExeption:
-        pass
-    
+        
 
 #==============================
 #             Main
@@ -472,12 +466,9 @@ def spin_srv(executor):
 def main():
     rclpy.init()    
     ltl_planner_node = MainPlanner()  
-    executor = SingleThreadedExecutor() 
+    executor = MultiThreadedExecutor() 
     executor.add_node(ltl_planner_node)
-    #thread = Thread(target=spin_srv, args=(executor,), daemon=True)
-    executor.spin() 
-    #thread.start()
-    #rclpy.spin(ltl_planner_node)
+    executor.spin()
 
 
 

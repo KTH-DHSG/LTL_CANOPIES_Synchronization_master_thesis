@@ -1,6 +1,12 @@
 #!/usr/bin/env python
+
+#TODOD: this node has not been tested but everything seems to be in order and all the adaptations
+# to work with ROS2 have been made.
+ 
 import rclpy
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor 
+from  rclpy.callback_groups import ReentrantCallbackGroup
 import math
 import numpy
 from copy import deepcopy
@@ -80,12 +86,13 @@ class VelCmdMixer(Node):
         # define QoS profile for publishers
         # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
         self.qos_profile = rclpy.qos.QoSProfile(depth=50, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST)
+        self.callback_group = ReentrantCallbackGroup()
         
         # Set closest region service client
-        self.closest_reg_srv = self.create_client(ClosestState, "closest_region")
+        self.closest_reg_srv = self.create_client(ClosestState, "closest_region", callback_group=self.callback_group)
 
         # Set trap check service client
-        self.trap_cheq_srv = self.create_client(TrapCheck, "check_for_trap")
+        self.trap_cheq_srv = self.create_client(TrapCheck, "check_for_trap", callback_group=self.callback_group)
 
         # Set mix initiave controller output
         self.mix_vel_cmd_pub = self.create_publisher(Twist, "cmd_vel", self.qos_profile)
@@ -97,7 +104,7 @@ class VelCmdMixer(Node):
         self.key_vel_sub = self.create_subscription(Twist, "key_vel", self.teleop_cmd_callback, self.qos_profile)
 
         # Set planner input subscriber
-        self.nav_vel_sub = self.create_subscription(Twist, "nav_vel", self.planner_cmd_callback, self.qos_profile)
+        self.nav_vel_sub = self.create_subscription(Twist, "nav_vel", self.planner_cmd_callback, self.qos_profile, callback_group=self.callback_group)
 
     #-------------------------
     # Agent TS state callback
@@ -148,9 +155,8 @@ class VelCmdMixer(Node):
         
         # Call service to get the closest region
         self.closest_reg_srv.wait_for_service()
-        future = self.closest_reg_srv.call_async(closest_reg_req)
-        rclpy.spin_until_future_complete(self, future)
-        closest_reg = future.result()
+        closest_reg = self.closest_reg_srv.call(closest_reg_req)
+
 
         # If service returns a closest state
         if closest_reg.closest_state:
@@ -167,9 +173,8 @@ class VelCmdMixer(Node):
             
             # Call service to check if a state is a trap
             self.trap_cheq_srv.wait_for_service()
-            future = self.trap_cheq_srv.call_async(check_for_trap_req)
-            rclpy.spin_until_future_complete(self, future)
-            check_for_trap_res = future.result()
+            check_for_trap_res = self.trap_cheq_srv.call(check_for_trap_req)
+
 
             self.get_logger().debug("LTL velocity command MIC: Closest region is %s and distance is %f" % (closest_reg.closest_state, closest_reg.metric))
 

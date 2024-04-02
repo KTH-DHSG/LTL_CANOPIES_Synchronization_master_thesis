@@ -53,21 +53,18 @@ class Region2DPoseStateMonitor(Node):
     # Setup subscriber to agent localization
     #----------------------------------------
     def setup_pub_sub(self):
-        #IMPORTANTD:check all qos becasue it may not work with different depths
         # define QoS profile for publishers
         # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
-        self.qos_profile_sub = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
-        self.qos_profile_pub = rclpy.qos.QoSProfile(depth=10, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
-        
+        self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)       
         
         # Subscribe to topic of agent requesting station access
-        self.station_request_sub = self.create_subscription(String, "station_access_request", self.station_request_callback, self.qos_profile_sub)
+        self.station_request_sub = self.create_subscription(String, "station_access_request", self.station_request_callback, self.qos_profile)
 
         # Subscribe to Pose topic
-        self.pose_sub = self.create_subscription(Pose,"agent_2d_region_pose", self.handle_pose_callback, self.qos_profile_sub)
+        self.pose_sub = self.create_subscription(Pose,"agent_2d_region_pose", self.handle_pose_callback, self.qos_profile)
         
         # Publisher of current region
-        self.current_region_pub = self.create_publisher( String, "current_region",self.qos_profile_pub)
+        self.current_region_pub = self.create_publisher( String, "current_region",self.qos_profile)
 
         # Publisher of closest region
         self.closest_region_srv = self.create_service(ClosestState, "closest_region", self.closest_state_callback)

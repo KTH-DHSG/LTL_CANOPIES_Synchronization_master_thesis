@@ -2,6 +2,7 @@
 from ltl_automaton_messages.srv import TrapCheck
 from networkx import dijkstra_predecessor_and_distance, has_path
 from ltl_automaton_planner.ltl_automaton_utilities import handle_ts_state_msg
+from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 import rclpy
 
 #===================================================
@@ -29,7 +30,8 @@ class TrapDetectionPlugin(object):
     #--------------------------------------
     def set_sub_and_pub(self):
         # Initialize check for trap service
-        self.ltl_planner_node.trap_srv = self.ltl_planner_node.create_service(TrapCheck, 'check_for_trap', self.trap_check_callback)
+        self.trap_srv_cb_group = MutuallyExclusiveCallbackGroup()
+        self.ltl_planner_node.trap_srv = self.ltl_planner_node.create_service(TrapCheck, 'check_for_trap', self.trap_check_callback, callback_group=self.trap_srv_cb_group)
 
     #------------------------------
     # Run at every TS state update
@@ -61,8 +63,6 @@ class TrapDetectionPlugin(object):
             res.is_connected = False
 
         # Return service response
-        self.ltl_planner_node.get_logger().warning("inside callback before return")
-        self.ltl_planner_node.get_logger().warning(str(res))
         return res
 
     #---------------------------------

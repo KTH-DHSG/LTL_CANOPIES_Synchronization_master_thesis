@@ -70,7 +70,6 @@ class BoolCmdMixer(Node):
         """
         # define QoS profile for publishers
         # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
-        # IMPORTANTD: Ask Victor about this setting and why it is used at 50
         self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
         self.callback_group = ReentrantCallbackGroup() 
 
@@ -123,7 +122,6 @@ class BoolCmdMixer(Node):
         """
         Human command input callback
         """
-        self.get_logger().warning("teleop cmd calback")
         # If boolean command is true
         if msg.data:
             # Get next state if action is executed
@@ -131,6 +129,9 @@ class BoolCmdMixer(Node):
                 # Find state in the TS state
                 if self.curr_ts_state.state_dimension_names[i] == self.state_dimension_name:
                     # Check if trap using potential state if action would to be executed
+                    #IMPORTANTD: if the monitored action is not possible then there is an error ask if normal or needs to be fixed
+                    # like r1 loaded  and monitored action is pick
+                    #self.get_logger().warning(str(self.action_to_state[self.curr_ts_state.states[i]]))
                     if not self.check_for_trap(self.action_to_state[self.curr_ts_state.states[i]][self.monitored_action]):
                         # If not a trap publish command
                         self.mix_cmd_pub.publish(msg)
@@ -142,7 +143,6 @@ class BoolCmdMixer(Node):
         """
         Check if risk of trap when executing commands.
         """
-
         # Create check for trap request from TS state
         ts_state_to_check = deepcopy(self.curr_ts_state)
         for i in range(len(self.curr_ts_state.state_dimension_names)):
@@ -155,28 +155,16 @@ class BoolCmdMixer(Node):
                 check_for_trap_req.ts_state = ts_state_to_check
                 
                 # Call service to check if a state is a trap
-                
-                
-                result = None 
-                self.get_logger().warning(str(result))
                 self.trap_cheq_srv.wait_for_service()
-                result = self.trap_cheq_srv.call(check_for_trap_req)
-                #self.get_logger().warning(str(result))
-                #while result==None:
-                    #self.get_logger().warning("waiting")
-                #future = self.trap_cheq_srv.call_async(check_for_trap_req)
-                # FIXMED: future is never completed
-                #rclpy.spin_until_future_complete(self, future)
-                self.get_logger().warning("finished future")
-                check_for_trap_res = future.result()
+                check_for_trap_res = self.trap_cheq_srv.call(check_for_trap_req)
 
                 self.get_logger().warning("LTL boolean command MIC: testing next state %s" % (ts_state_to_check.states))
 
                 # if either unconnected or a trap (both considered a trap)
                 if not check_for_trap_res.is_connected or (check_for_trap_res.is_connected and check_for_trap_res.is_trap):
                     self.get_logger().warning("LTL boolean command MIC: Agent is in state %s and state %s is a trap" % (self.curr_ts_state.states, check_for_trap_req.ts_state.states))
-                # Return true if a trap
-                return True
+                    # Return true if a trap
+                    return True
         # If not a trap or cannot be tested
         return False
 
