@@ -1,0 +1,10 @@
+# Service for updating dynamic parameters in the planner
+
+# the value of the dynamic parameters
+bool replan_on_unplanned_move
+bool check_timestamp
+
+---
+
+# Returns true if the service was successful
+bool success

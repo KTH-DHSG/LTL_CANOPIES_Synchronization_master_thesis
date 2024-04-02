@@ -1,0 +1,4 @@
+# Example of a plugin configuration file
+TrapDetectionPlugin:
+  path: "ltl_automaton_hil_mic.trap_detection"
+  args: ""

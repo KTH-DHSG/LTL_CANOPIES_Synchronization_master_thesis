@@ -1,0 +1,4 @@
+# Example of a plugin configuration file
+first_plugin:
+  path: "first_plugin"
+  args: "arguments for first_plugin"
