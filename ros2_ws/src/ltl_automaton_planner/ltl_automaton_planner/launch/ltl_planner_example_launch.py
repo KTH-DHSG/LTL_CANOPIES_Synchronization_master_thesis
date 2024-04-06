@@ -1,11 +1,12 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 import os
 from ament_index_python.packages import get_package_share_directory
 
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
+def generate_launch_description():    
+    planner_node= Node(
             package='ltl_automaton_planner',
             executable='ltl_planner_node',
             name='ltl_planner',
@@ -22,6 +23,8 @@ def generate_launch_description():
                 # Plugin commented out becasue the file is just a test
                 #{'plugin_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_planner'), 'config', 'plugins.yaml')},    
             ]
-        )        
+        ) 
+    return LaunchDescription([
+               planner_node
     ])
     

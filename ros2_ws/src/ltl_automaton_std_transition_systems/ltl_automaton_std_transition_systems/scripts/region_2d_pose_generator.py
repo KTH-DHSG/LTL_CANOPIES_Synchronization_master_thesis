@@ -2,8 +2,8 @@
 import os
 import yaml
 import math
-import rospkg
-from tf.transformations import quaternion_from_euler
+from ament_index_python.packages import get_package_prefix
+from tf_transformations import quaternion_from_euler
 
 def distance_2d(ax, ay, bx, by):
     return math.sqrt((ax - bx) ** 2 + (ay - by) ** 2)
@@ -51,7 +51,7 @@ def generate_regions_and_actions(region_definition_dict):
         region_2d_pose_ts_dict['actions'].update({'goto_s'+str(i): {'type': 'move',
                                                                     'weight': 10,
                                                                     'guard': "1",
-                                                                    'attr': {'region': 's'+str(i), 'pose': [[station_dict['origin']['x'], station_dict['origin']['y'], 0], station_quaternion.tolist()]}}})
+                                                                    'attr': {'region': 's'+str(i), 'pose': [[station_dict['origin']['x'], station_dict['origin']['y'], 0], list(station_quaternion)]}}})
 
 
     # Create cell regions
@@ -124,17 +124,17 @@ def generate_regions_and_actions(region_definition_dict):
     return region_2d_pose_ts_dict
 
 def write_to_file(file_name="generated_2d_pose_region_ts", region_2d_pose_ts_dict={}):
-    with open(os.path.join(rospkg.RosPack().get_path('ltl_automaton_std_transition_systems'),
-                                                     'config',
-                                                     'generated_ts',
-                                                     file_name+'.yaml'),'w') as file:
+    with open(os.path.join(get_package_prefix('ltl_automaton_std_transition_systems').replace('/install/', '/src/'),
+                                                                            'ltl_automaton_std_transition_systems',
+                                                                             'config',
+                                                                             file_name+'.yaml'),'w') as file:
         yaml.dump(region_2d_pose_ts_dict, file)
 
     print("-----------------------------------------------------------")
     print(" 2D pose region transition systems successfully generated!")
     print("-----------------------------------------------------------")
-    print(" File can be find at %s" % os.path.join(rospkg.RosPack().get_path('ltl_automaton_std_transition_systems'),
+    print(" File can be find at %s" % os.path.join(get_package_prefix('ltl_automaton_std_transition_systems').replace('/install/', '/src/'),
+                                                                            'ltl_automaton_std_transition_systems',
                                                                              'config',
-                                                                             'generated_ts',
                                                                              file_name+'.yaml'))
 

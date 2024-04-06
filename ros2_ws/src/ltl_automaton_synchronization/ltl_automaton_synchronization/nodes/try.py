@@ -11,7 +11,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from std_msgs.msg import String, Header, Bool
 import os
 from rclpy.executors import MultiThreadedExecutor 
-
+from ltl_automaton_planner.nodes.planner_node import show_automaton
 from ament_index_python.packages import get_package_prefix
 import yaml
 
@@ -20,10 +20,34 @@ import sys
 
 def main():
     rclpy.init()
-    executor = MultiThreadedExecutor() 
     node = rclpy.create_node('prova')
     
-    qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
+    
+    
+    
+    
+    
+    
+    '''file_name = "test_ts"
+    print(" File can be find at %s" % os.path.join(get_package_prefix('ltl_automaton_std_transition_systems'),
+                                                                            'ltl_automaton_std_transition_systems',
+                                                                             'config',
+                                                                             'generated_ts',
+                                                                             file_name+'.yaml'))
+    path= os.path.join(get_package_prefix('ltl_automaton_std_transition_systems').replace('/install/', '/src/'),
+                                                                            'ltl_automaton_std_transition_systems',
+                                                                             'config',
+                                                                             file_name+'.yaml')
+    
+    print(path)
+    #file_path = path.replace('/install/', '/src/')
+    print(os.path.exists(path))
+    #workspace_path = os.getenv('AMENT_PREFIX_PATH')
+    #print(workspace_path)
+    
+    executor = MultiThreadedExecutor() 
+    node = rclpy.create_node('prova')
+        qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
     point_msg = Point()
     point_msg.x = 1.5
     point_msg.y = -0.87 
@@ -95,6 +119,10 @@ def main():
     #message.ts_state = ts_state_msg
 
     rclpy.spin(node, executor)
+    
+    
+    '''
+
     
 if __name__ == '__main__':
     main()

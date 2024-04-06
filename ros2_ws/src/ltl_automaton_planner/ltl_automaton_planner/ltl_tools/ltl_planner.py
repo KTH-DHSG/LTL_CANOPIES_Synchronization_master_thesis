@@ -59,13 +59,9 @@ class LTLPlanner(object):
                 return False
         elif style == 'on-the-fly-task':
             if self.product:
+                #IMPORTANTD: not working task replanning
                 # on-the-fly task construction, only reset buchi, initial states and replan
-                #print(self.product.graph['buchi'].nodes())
-                #print(self.product.graph['buchi'].edges())
                 self.product.graph['buchi'] = mission_to_buchi(self.ros_node, self.hard_spec, self.soft_spec)
-                #print(self.product.graph['buchi'].nodes())
-                #print(self.product.graph['buchi'].edges())
-                #print(self.product.graph[''])
                 self.product.build_full()
                 self.run, plantime = dijkstra_plan_networkX(self.ros_node, self.product, self.gamma)
             else:

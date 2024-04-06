@@ -29,7 +29,7 @@ from ltl_automaton_messages.srv import TaskPlanning, DynamicParameters
 
 def show_automaton(automaton_graph):
     pos=nx.circular_layout(automaton_graph)
-    nx.draw(automaton_graph, pos)
+    nx.draw(automaton_graph, pos, connectionstyle="arc3,rad=0.1")
     nx.draw_networkx_labels(automaton_graph, pos)
     edge_labels = nx.get_edge_attributes(automaton_graph, 'action')
     nx.draw_networkx_edge_labels(automaton_graph, pos, edge_labels = edge_labels)
@@ -80,13 +80,20 @@ class MainPlanner(Node):
         # Transition system
         #-------------------
         # Get TS file path from param
-        transition_system_path = self.declare_parameter('transition_system_path', "").value
+        # IMPORTANTD: added to guarantee use with other definition of TS
+        if self.has_parameter('transition_system_path'):        
+            transition_system_path = self.get_parameter('transition_system_path').value
+        else:
+            transition_system_path = self.declare_parameter('transition_system_path', "").value
+              
         if transition_system_path == "":
             raise RuntimeError("No Transition System file defined, cannot initialize LTL planner")
-        else:
+        elif transition_system_path == "none":
+            # this option is used in case of an alternative way to define the transition system
+            self.get_logger().warning("transitions_system_path is set to 'none'")
+        else:            
             with open(transition_system_path) as transition_system_textfile:         
                 self.transition_system = import_ts_from_file(transition_system_textfile)
-        #print(self.transition_system)
 
         # Parameter if initial TS is set from agent callback or from TS config file
         self.initial_ts_state_from_agent = self.declare_parameter('initial_ts_state_from_agent', False).value
@@ -329,7 +336,6 @@ class MainPlanner(Node):
         #--------------------------------------------
         # If state not part of the transition system
         #--------------------------------------------
-        #FIXMED: using none as a error
         else:
             #ERROR: unknown state (not part of TS)
             next_move_msg = String()
@@ -458,14 +464,14 @@ class MainPlanner(Node):
         
         # Return the message content
         return future.result()
-        
 
+  
 #==============================
 #             Main
 #==============================
 def main():
-    rclpy.init()    
-    ltl_planner_node = MainPlanner()  
+    rclpy.init()   
+    ltl_planner_node = MainPlanner() 
     executor = MultiThreadedExecutor() 
     executor.add_node(ltl_planner_node)
     executor.spin()
