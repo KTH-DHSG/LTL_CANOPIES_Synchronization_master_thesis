@@ -27,13 +27,13 @@ class SynchroPlanner(MainPlanner):
         super().__init__()
         
     def init_params(self):
-        motion_dictionary_path = self.declare_parameter('motion_dictionary_path', '').value
-        with open(motion_dictionary_path, 'r') as file:
-            self.motion_dict = yaml.safe_load(file)       
         
-        action_dictionary_path = self.declare_parameter('action_dictionary_path', '').value
-        with open(action_dictionary_path, 'r') as file:
-            self.action_dict = yaml.safe_load(file)
+        # retrieving full dictionary and retrieving motion and action dictionaries        
+        motion_action_dictionary_path = self.declare_parameter('motion_action_dictionary_path', '').value
+        with open(motion_action_dictionary_path, 'r') as file:
+            motion_action_dictionary = yaml.safe_load(file)
+            self.motion_dict = motion_action_dictionary['motion']
+            self.action_dict = motion_action_dictionary['action']
             
         self.declare_parameter('transition_system_path', "none")
         
@@ -41,6 +41,9 @@ class SynchroPlanner(MainPlanner):
     
     
     def build_automaton(self):
+        
+        # updates the initial states of the dictionaries
+        self.set_initial_state()
         
         # motion and actions
         motion_ts = MotionTS(self.motion_dict)
@@ -52,12 +55,20 @@ class SynchroPlanner(MainPlanner):
         # initialize the planner
         self.ltl_planner = LTLPlanner(self, self.robot_model, self.hard_task, self.soft_task, self.initial_beta, self.gamma)
         self.ltl_planner.optimal()
-
         # Get first value from set
         self.ltl_planner.curr_ts_state = list(self.ltl_planner.product.graph['ts'].graph['initial'])[0]
 
         # initialize storage of set of possible runs in product
         self.ltl_planner.posb_runs = set([(n,) for n in self.ltl_planner.product.graph['initial']])
+
+    def set_initial_state(self):        
+        # if None then the initial state will be taken direcly from the dictionaries
+        if not self.initial_state_ts_dict == None:
+            # otherwise we modify the dictionaries to the state given 
+            self.motion_dict['initial'] =  self.initial_state_ts_dict[self.motion_dict['type']]
+            self.action_dict['initial'] =  self.initial_state_ts_dict[self.action_dict['type']]
+
+
 #==============================
 #             Main
 #==============================

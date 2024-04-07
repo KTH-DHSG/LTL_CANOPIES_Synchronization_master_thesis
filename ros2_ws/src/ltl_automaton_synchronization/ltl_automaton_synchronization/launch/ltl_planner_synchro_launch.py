@@ -18,8 +18,7 @@ def generate_launch_description():
                 {'hard_task': "([]<> (r2 && l123))"},
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
-                {'motion_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'region_dictionary.yaml')},
-                {'action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'action_dictionary.yaml')},
+                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'full_dictionary.yaml')},
             ]
         )        
     ])

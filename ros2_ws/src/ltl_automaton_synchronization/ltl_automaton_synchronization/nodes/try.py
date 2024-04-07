@@ -122,7 +122,25 @@ def main():
     
     
     '''
-
+    executor = MultiThreadedExecutor() 
+    node = rclpy.create_node('prova')
+    qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
+    
+    
+    publisher1= node.create_publisher(TransitionSystemStateStamped, 'ts_state', qos_profile)
+    subscriber4 = node.create_subscription(String, 'next_move_cmd', lambda msg: print("\n\nnext_move_cmd: "+str(msg)), qos_profile)
+    
+    TSSS_msg = TransitionSystemStateStamped()
+    TSS_msg = TransitionSystemState()
+    TSS_msg.states = ["r2", "free"]
+    TSS_msg.state_dimension_names= ["MotionTS", "ActionModel"]
+    header_msg = Header()
+    header_msg.stamp = node.get_clock().now().to_msg()
+    TSSS_msg.header = header_msg
+    TSSS_msg.ts_state = TSS_msg
+    
+    publisher1.publish(TSSS_msg)
+    rclpy.spin(node, executor)
     
 if __name__ == '__main__':
     main()

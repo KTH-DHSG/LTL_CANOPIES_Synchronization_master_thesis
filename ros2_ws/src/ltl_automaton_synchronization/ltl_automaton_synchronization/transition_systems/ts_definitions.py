@@ -13,12 +13,12 @@ def distance(pose1, pose2):
 class MotionTS(DiGraph):
     
     # node_dict = { symbol : {label, pose, weights}}    
-    def __init__(self, node_dict, ts_type="MotionTS", init_pose=None):
-        DiGraph.__init__(self, symbols=set(node_dict.keys()), node_dict=node_dict, ts_type=ts_type, initial=set())
+    def __init__(self, node_dict):
+        DiGraph.__init__(self, symbols=set(node_dict['regions'].keys()), node_dict=node_dict['regions'], ts_type=node_dict['type'], initial=node_dict['initial'])
         # build the full graph
         self.build_full()
         # set the initial node of the graph
-        self.set_initial(init_pose)
+        #self.set_initial(init_pose)
         
     def build_full(self):
         #creating only nodes
@@ -40,15 +40,6 @@ class MotionTS(DiGraph):
                         self.add_edge(i_node, j_node, weight = i_data['weights'][j])
                 j+=1
 
-    # set the initial node of the graph    
-    def set_initial(self, pose):
-        if pose == None:
-            self.graph['initial'] = set([list(self.nodes())[0]])
-            return list(self.nodes())[0]                
-        init_node = self.closest_node(pose)
-        self.graph['initial'] = set([init_node])
-        return init_node
-
     # find the closest node to the given pose if it is in the graph
     def closest_node(self, pose):        
         # check if the pose is in the graph       
@@ -59,8 +50,7 @@ class MotionTS(DiGraph):
                 possible_nodes.append(node)
         # if the pose is not in the graph, raise an exception
         if len(possible_nodes) == 0:
-            # TODOD:change from Exception to return None
-            raise Exception("No node found for the given pose")        
+            return None        
         # if the pose is in the graph, return the closest node        
         node = min(possible_nodes, key= lambda n: distance(self.nodes[n]['pose'],pose))       
         return node
@@ -70,13 +60,14 @@ class MotionTS(DiGraph):
 #===================================================
 class ActionModel(object):    
     # action_dict = {act_name: (cost, guard_formula, label, dependendy={action: set(regions)}, category)}
-    def __init__(self, action_dict, ts_type='ActionModel'):
-        self.action = action_dict
-        self.ts_type = ts_type
+    def __init__(self, action_dict):
+        self.action = action_dict['actions']
+        self.ts_type = action_dict['type']
+        self.initial = action_dict['initial']
         # add a 'None' action
-        #FIXMED: NO LABEL FOR THE ACTION so not sure this respects meng but may not work
-        self.action['free'] = {"weight":1, "guard":'1', "label": '', "dependency":{}, "type": 'local'}
-    
+        #TODOD: check where to add initial action
+        #FIXMED: NO LABEL FOR THE ACTION so not sure this respects meng but may not work it did not work 
+        
     # return the allowed actions for a given node label i.e. region of the motion FTS
     # works with single labels or sets of labels independently
     def allowed_actions(self, ts_node_label):
@@ -91,15 +82,14 @@ class ActionModel(object):
 #===================================================       
 class MotActTS(DiGraph):
     def __init__(self, mot_fts, act_model):
-        DiGraph.__init__(self, region=mot_fts, action=act_model, initial=set(), ts_state_format=[[mot_fts.graph['ts_type']], [act_model.ts_type]])
+        DiGraph.__init__(self, region=mot_fts, action=act_model, initial=set([(mot_fts.graph['initial'], act_model.initial)]), ts_state_format=[[mot_fts.graph['ts_type']], [act_model.ts_type]])
 
     # creates the states for the complete model
     def composition(self, reg, act):
         prod_node = (reg, act)
         if not self.has_node(prod_node):
+            # FIXMED: modification to make action none ans state free
             self.add_node(prod_node, label=prod_node, region=self.graph['region'].nodes[reg]['pose'], action=act, marker='unvisited')
-            if ((reg in self.graph['region'].graph['initial']) and (act == 'free')):
-                self.graph['initial'].add(prod_node)
         return prod_node 
     
     def build_full(self):
@@ -107,6 +97,8 @@ class MotActTS(DiGraph):
         self.build_nodes()
         # creating all the edges
         self.build_edges()
+        
+        # creating initial node
                                     
     def build_nodes(self):
         for reg in self.graph['region'].nodes():

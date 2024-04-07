@@ -9,24 +9,18 @@ from ts_definitions import MotionTS, ActionModel, MotActTS
 
 
 
-file_name = 'region_dictionary'
-region_dict = {}
-with open(os.path.join(get_package_prefix('ltl_automaton_synchronization').replace('/install/', '/src/'),
-                                                                        'ltl_automaton_synchronization',
-                                                                            'config',
-                                                                            file_name+'.yaml'),'r') as file:
-    region_dict = yaml.safe_load(file)
-    
-file_name = 'action_dictionary'
-
+file_name = 'full_dictionary'
+motion_dict = {}
 action_dict = {}
 with open(os.path.join(get_package_prefix('ltl_automaton_synchronization').replace('/install/', '/src/'),
                                                                         'ltl_automaton_synchronization',
                                                                             'config',
                                                                             file_name+'.yaml'),'r') as file:
-    action_dict = yaml.safe_load(file)
-
-motion_ts = MotionTS(region_dict, set(region_dict.keys()), 'a11_FTS')
+    motion_action_dictionary = yaml.safe_load(file)
+    motion_dict = motion_action_dictionary['motion']
+    action_dict = motion_action_dictionary['action']
+    
+motion_ts = MotionTS(motion_dict)
 action_mod = ActionModel(action_dict)
 model = MotActTS(motion_ts, action_mod)
 model.build_full()

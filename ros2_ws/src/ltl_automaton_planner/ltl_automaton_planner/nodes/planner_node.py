@@ -179,6 +179,8 @@ class MainPlanner(Node):
         self.robot_model = TSModel(self, state_models)
         self.ltl_planner = LTLPlanner(self, self.robot_model, self.hard_task, self.soft_task, self.initial_beta, self.gamma)
         self.ltl_planner.optimal()
+        
+        print(self.robot_model.graph['initial'])
         # Get first value from set
         self.ltl_planner.curr_ts_state = list(self.ltl_planner.product.graph['ts'].graph['initial'])[0]
 
