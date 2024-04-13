@@ -19,8 +19,8 @@ import rclpy
 import sys
 
 def main():
-    rclpy.init()
-    node = rclpy.create_node('prova')
+
+
     
     
     
@@ -46,7 +46,7 @@ def main():
     #print(workspace_path)
     
     executor = MultiThreadedExecutor() 
-    node = rclpy.create_node('prova')
+    node = rclpy.create_node('test')
         qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
     point_msg = Point()
     point_msg.x = 1.5
@@ -122,8 +122,10 @@ def main():
     
     
     '''
+    
+    rclpy.init()
     executor = MultiThreadedExecutor() 
-    node = rclpy.create_node('prova')
+    node = rclpy.create_node('test')
     qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
     
     

@@ -40,10 +40,10 @@ def output_standard(file_name):
         'type': 'ActionModel',
         'initial':'free', #free=none
         'actions':{
-            'c13': {'weight':10, 'guard':'r1 || r3', 'label': 'c13', "dependency": {'h1':['r1','r3'], 'h2':['r2']}, 'type': 'collaborative'},
+            'c13': {'weight':10, 'guard':'r1 || r3', 'label': 'c13', "dependency": {'h1':['r1','r3'], 'a2':['r2']}, 'type': 'collaborative'},
             'l123': {'weight':20, 'guard':'1', 'label': 'l123', "dependency": {}, 'type': 'local'},
             'a2': {'weight':30, 'guard':'r2', 'label': 'a2', "dependency": {}, 'type': 'assisting'},
-            'free' : {"weight":1, "guard":'1', "label": '', "dependency":{}, "type": 'local'}        
+            'free' : {"weight":1, "guard":'1', "label": 'none', "dependency":{}, "type": 'local'}        
         }
     }
     full_dictionary = {

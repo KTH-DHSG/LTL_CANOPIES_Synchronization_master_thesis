@@ -14,6 +14,13 @@ matplotlib.rcParams['text.usetex'] = True
 
 
 
+
+import sys
+import termios
+import tty
+
+
+
 act_replace={
     'r': '$r$',
     'c':'$c$',
@@ -391,6 +398,21 @@ def plot_AA(AA, STEP, local, dep):
     ax.legend(ncol=3, shadow=True)
     pyplot.savefig('action.pdf',bbox_inches='tight')
 
+#IMPORTANTD :added by davide to test
+def wait_for_key():
+    print("Press any key to continue...")
+    old_settings = termios.tcgetattr(sys.stdin)
+    try:
+        tty.setcbreak(sys.stdin.fileno())
+        sys.stdin.read(1) # Wait for a key press
+    finally:
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+    print("Key pressed!")
+
+
+
+
+
 ############################################
 STEP = 0.1
 t=0
@@ -444,7 +466,7 @@ CC = list()
 AA = list()
 global_com_bound = 5
 
-
+# IMPORTANTD: Meng's code start from here
 ##################### initial plan synthesis
 for i in xrange(0, N):
     print ('Agent A%s' %(i))
@@ -613,9 +635,15 @@ while(tt<T_bound):
                 #print 'reply from agent %s' %str(i+1) , Reply[i]
                 C.append([choosen_agent, i])
                 #com_counter = 3
+        
+        print(request)
+        print(Reply)
+        #wait_for_key()
         Confirm, time = Planner[choosen_agent].confirmation(request, 
             Reply)
         print ('Confirmation',Confirm)
+        print ('time', time)
+        wait_for_key()
         #print 'choosen_agent contract time', Planner[choosen_agent].contract_time
         #print '**************'
         if time>0:

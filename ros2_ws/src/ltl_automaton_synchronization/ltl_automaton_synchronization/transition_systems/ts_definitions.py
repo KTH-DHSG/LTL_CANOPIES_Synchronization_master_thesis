@@ -106,6 +106,7 @@ class MotActTS(DiGraph):
                 self.composition(reg, act)
         
     def build_edges(self):
+        movement_actions = {}
         for reg in self.graph['region'].nodes():
             for act in self.graph['action'].action.keys():
                 # adding actions transitions
@@ -115,16 +116,20 @@ class MotActTS(DiGraph):
                         if(act=='free'):
                             # add edge from None to action
                             #IMPORTANTD: chnaged label to action (just the name to adapt to the planner)
-                            self.add_edge((reg, act), (reg, act_to), action= act_to, guard=self.graph['action'].action[act_to]['guard'], weight=self.graph['action'].action[act_to]['weight'], marker= 'visited')
+                            self.add_edge((reg, act), (reg, act_to), action = self.graph['action'].action[act_to]['label'], guard=self.graph['action'].action[act_to]['guard'], weight=self.graph['action'].action[act_to]['weight'], marker= 'visited')
                         # add edge from action to None
                         self.add_edge((reg, act_to), (reg, 'free'), action='none', guard='1', weight=self.graph['action'].action['free']['weight'], marker='visited')
                 # adding motions transitions
                 for reg_to in self.graph['region'].successors(reg):
                     # add edge between regions (actions None for both nodes)
-                    self.add_edge((reg, 'free'), (reg_to, 'free'), action='goto_'+str(reg_to), guard='1', weight=self.graph['region'][reg][reg_to]['weight'], marker='visited')
+                    act = 'goto_'+str(reg)+'_'+str(reg_to)
+                    cost = self.graph['region'][reg][reg_to]['weight']
+                    self.add_edge((reg, 'free'), (reg_to, 'free'), action=act, guard='1', weight=cost, marker='visited')
+                    # adding all movement actions to a dictionary
+                    movement_actions.update({act: {'weight':cost, 'guard':'1', 'label': act , "dependency": {}, 'type': 'local'}})
             # adding self transitions (none action to waste time)
             self.add_edge((reg, 'free'), (reg, 'free'), action='none', guard='1', weight=self.graph['action'].action['free']['weight'], marker='visited')
-            
+        self.graph['action'].action.update(movement_actions)    
     
     def set_initial(self, ts_state):
         """

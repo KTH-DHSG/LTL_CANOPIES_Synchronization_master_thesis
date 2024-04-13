@@ -11,7 +11,7 @@ action:
         h1:
         - r1
         - r3
-        h2:
+        a2:
         - r2
       guard: r1 || r3
       label: c13
@@ -20,7 +20,7 @@ action:
     free:
       dependency: {}
       guard: '1'
-      label: ''
+      label: none
       type: local
       weight: 1
     l123:

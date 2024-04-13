@@ -29,7 +29,7 @@ from ltl_automaton_messages.srv import TaskPlanning, DynamicParameters
 
 def show_automaton(automaton_graph):
     pos=nx.circular_layout(automaton_graph)
-    nx.draw(automaton_graph, pos, connectionstyle="arc3,rad=0.1")
+    nx.draw(automaton_graph, pos)
     nx.draw_networkx_labels(automaton_graph, pos)
     edge_labels = nx.get_edge_attributes(automaton_graph, 'action')
     nx.draw_networkx_edge_labels(automaton_graph, pos, edge_labels = edge_labels)
@@ -58,6 +58,12 @@ class MainPlanner(Node):
 
     
     def init_params(self):
+        
+        #IMPORTANTD: all publisher and subscriber must have the same exact qos profile
+        # define QoS profile
+        # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
+        self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
+       
         
         #Get parameters from parameter server
         self.agent_name = self.declare_parameter('agent_name', 'agent').value
@@ -180,7 +186,6 @@ class MainPlanner(Node):
         self.ltl_planner = LTLPlanner(self, self.robot_model, self.hard_task, self.soft_task, self.initial_beta, self.gamma)
         self.ltl_planner.optimal()
         
-        print(self.robot_model.graph['initial'])
         # Get first value from set
         self.ltl_planner.curr_ts_state = list(self.ltl_planner.product.graph['ts'].graph['initial'])[0]
 
@@ -193,10 +198,6 @@ class MainPlanner(Node):
 
 
     def setup_pub_sub(self):
-        #IMPORTANTD: all publisher and subscriber must have the same exact qos profile
-        # define QoS profile for publishers
-        # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
-        self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
         # Prefix plan publisher
         
         self.prefix_plan_pub = self.create_publisher(LTLPlan, 'prefix_plan', self.qos_profile)
@@ -460,9 +461,10 @@ class MainPlanner(Node):
             future.set_result(msg)
 
         # Subscribe to the topic
-        self.create_subscription(message_type, topic_name, callback, self.qos_profile) 
+        self.init_ts_sub = self.create_subscription(message_type, topic_name, callback, self.qos_profile) 
         # Wait for the message
         rclpy.spin_until_future_complete(self, future)
+        self.destroy_subscription(self.init_ts_sub)
         
         # Return the message content
         return future.result()
