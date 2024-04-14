@@ -86,7 +86,6 @@ class MainPlanner(Node):
         # Transition system
         #-------------------
         # Get TS file path from param
-        # IMPORTANTD: added to guarantee use with other definition of TS
         if self.has_parameter('transition_system_path'):        
             transition_system_path = self.get_parameter('transition_system_path').value
         else:

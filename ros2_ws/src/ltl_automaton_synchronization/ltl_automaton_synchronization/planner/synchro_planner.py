@@ -16,13 +16,7 @@ class sync_LTLPlanner(LTLPlanner):
         self.detour_path = []
         self.detour = []
         super().__init__(ros_node, ts, hard_spec, soft_spec, beta, gamma)
-    
-    
-    
-    
 
-    
-    
     
     
     
@@ -64,6 +58,8 @@ class sync_LTLPlanner(LTLPlanner):
                             roi = chose_ROI(item, *args, **kwargs)
                             # insert the request
                             request[(roi, item[0])] = k
+                        # update contract time
+                        self.contract_time = k
                         return request
                     # add weight of the last non collaborative action
                     k += self.action_dictionary[act_key]['weight']
@@ -85,6 +81,8 @@ class sync_LTLPlanner(LTLPlanner):
                             roi = chose_ROI(item, *args, **kwargs)
                             # insert the request
                             request[(roi, item[0])] = k
+                        # update contract time
+                        self.contract_time = k
                         return request
                     # add weight of the last non collaborative action
                     k += self.action_dictionary[act_key]['weight']
@@ -151,7 +149,7 @@ class sync_LTLPlanner(LTLPlanner):
         self.segment = 'detour'
         return True
     
-    
+
     
     
     

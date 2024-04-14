@@ -5,8 +5,9 @@ from ltl_automaton_planner.ltl_tools.ltl_planner import LTLPlanner
 from ltl_automaton_planner.nodes.planner_node import MainPlanner
 from ltl_automaton_synchronization.transition_systems.ts_definitions import MotionTS, ActionModel, MotActTS
 from ltl_automaton_synchronization.planner.synchro_planner import sync_LTLPlanner
+from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 
-
+from ltl_automaton_messages.msg import SynchroAgentConfirm, SynchroConfirm, SynchroRequest, SynchroReply
 from ltl_automaton_planner.ltl_tools.discrete_plan import compute_path_from_pre, dijkstra_targets
 
 import networkx as nx
@@ -27,11 +28,12 @@ def show_automaton(automaton_graph, edge_label='action'):
 class SynchroPlanner(MainPlanner):
     def __init__(self):
         super().__init__()
-        self.agent_name = self.get_namespace()
-        
+        self.timer_callback_group = ReentrantCallbackGroup()
+        self.timer = self.create_timer(0.1, self.timer_callback, callback_group=self.timer_callback_group)
+        self.starting_time=0
         
     def init_params(self):
-        
+                
         # retrieving full dictionary and retrieving motion and action dictionaries        
         motion_action_dictionary_path = self.declare_parameter('motion_action_dictionary_path', '').value
         with open(motion_action_dictionary_path, 'r') as file:
@@ -39,9 +41,29 @@ class SynchroPlanner(MainPlanner):
             self.motion_dict = motion_action_dictionary['motion']
             self.action_dict = motion_action_dictionary['action']
             
+        # force the parameter to avoid compatibility errors with the original planner
         self.declare_parameter('transition_system_path', "none")
         
+        # initializing the original planner
         super().init_params()
+        
+        # updating the agent name
+        self.agent_name = self.get_namespace()
+        
+        # getting all the agents involved
+        self.agents = self.declare_parameter('agents', []).value 
+        # removing the current agent from the list
+        #self.agents.remove(self.agent_name)
+        
+        # initializing request that needs to be processed
+        self.current_request = {}
+        
+        # initializing replies dictionary
+        self.replies = {}
+        
+        # variable used to count the number of replies recieved
+        self.recieved_replies = 0
+        
     
     
     def build_automaton(self):
@@ -64,42 +86,256 @@ class SynchroPlanner(MainPlanner):
 
         # initialize storage of set of possible runs in product
         self.ltl_planner.posb_runs = set([(n,) for n in self.ltl_planner.product.graph['initial']])
+
+        
+        
+    
+    def setup_pub_sub(self):
+        # initializing orignial pub/sub
+        super().setup_pub_sub()
+        
+        # creating a request publisher
+        self.request_pub = self.create_publisher(SynchroRequest, '/synchro_request', self.qos_profile)
+        
+        # creating a request subscirber
+        self.request_sub = self.create_subscription(SynchroRequest, '/synchro_request', self.request_callback, self.qos_profile)
+        
+        # creating publishers to reply to other agents and adding them to a dictionary
+        self.reply_publishers = {}
+        for agent in self.agents:
+            self.reply_publishers[agent]= self.create_publisher(SynchroReply, agent+'/synchro_reply', self.qos_profile)
+        
+        self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile)
+           
+        # creating a confirm publisher
+        self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
+        
+        # creating a confirm subscirber
+        self.confirm_sub = self.create_subscription(SynchroConfirm, '/synchro_confirm', self.confirm_callback, self.qos_profile)
+        
+        
+        
+        
+    
+    # returns just the first region for simplicity for now
+    def chose_ROI(self, dependency, *args, **kwargs):
+        return dependency[1][0]  
+        
+
+    def set_initial_state(self):        
+        # if None then the initial state will be taken direcly from the dictionaries
+        if not self.initial_state_ts_dict == None:
+            # otherwise we modify the dictionaries to the state given 
+            self.motion_dict['initial'] =  self.initial_state_ts_dict[self.motion_dict['type']]
+            self.action_dict['initial'] =  self.initial_state_ts_dict[self.action_dict['type']]
+
+
+    def timer_callback(self):
+        request=self.ltl_planner.cooperative_action_in_horizon(self.starting_time, self.chose_ROI)
+        self.starting_time += 1
+        if request:
+            self.current_request = request
+            request_msg = self.build_request_msg(request)
+            self.request_pub.publish(request_msg)
+
+    
+    def build_request_msg(self, request):
+        request_msg = SynchroRequest()
+        # adding name identifier
+        request_msg.agent = self.agent_name
+        # formatting the request
+        for key, value in request.items():
+            request_msg.roi.append(key[0])
+            request_msg.actions.append(key[1])
+            request_msg.time.append(value)
+        return request_msg
+
+    def request_callback(self, msg):
+        #FIXMED: add check to discard if i'm the sender, and multiple request case
+        agent, request = self.unpack_request_msg(msg)      
+        reply = self.ltl_planner.evaluate_request(request)
+        reply_msg = self.build_reply_msg(reply)
+        self.reply_publishers[agent].publish(reply_msg)
+    
+    def unpack_request_msg(self, msg):
+        # getting name of requesting agent
+        agent = msg.agent
+        # building the request dictionary
+        request = {}
+        for i in range(len(msg.roi)):
+            request[(msg.roi[i], msg.actions[i])] = msg.time[i]
+        return agent, request
+    
+    def build_reply_msg(self, reply):
+        reply_msg = SynchroReply()
+        # building the reply message 
+        reply_msg.agent = self.agent_name
+        for key, value in reply.items():
+            reply_msg.roi.append(key[0])
+            reply_msg.actions.append(key[1])
+            reply_msg.available.append(value[0])
+            reply_msg.time.append(value[1])
+        return reply_msg
+        
+    def reply_callback(self, msg):
+        
+        agent, reply = self.unpack_reply_msg(msg)
+        self.replies[agent] =  reply
+        self.recieved_replies += 1
+        
+        reply1 = reply.copy()
+        reply1[('r1','h1')] = (True, 50)
+        self.replies['/agent_2'] =  reply1
+        self.recieved_replies += 1
+        
+        reply2 = reply.copy()
+        reply2[('r2','a2')] = (True, 20)
+        self.replies['/agent_3'] =  reply2
+        self.recieved_replies += 1
+        
+        if self.recieved_replies == len(self.agents):     
+            confirm, time = self.ltl_planner.confirmation(self.current_request, self.replies)
+            self.replies = {}
+            self.recieved_replies = 0 
+            confirm_msg = self.build_confirm_msg(confirm)
+            self.confirm_pub.publish(confirm_msg)
+            print(confirm)
+    
+    def unpack_reply_msg(self, msg):
+        # getting name of requesting agent
+        agent = msg.agent
+        # building the request dictionary
+        reply = {}
+        for i in range(len(msg.roi)):
+            reply[(msg.roi[i], msg.actions[i])] = (msg.available[i], msg.time[i])
+        return agent, reply
+    
+    def build_confirm_msg(self, confirm):
+        confirm_msg = SynchroConfirm()
+        for agent, result in confirm.items():
+            # building the confirmation for each agent
+            confirm_agent_msg = SynchroAgentConfirm()
+            for key, value in result.items():
+                confirm_agent_msg.roi.append(key[0])
+                confirm_agent_msg.actions.append(key[1])
+                confirm_agent_msg.chosen.append(bool(value[0]))
+                confirm_agent_msg.time.append(value[1])
+            # adding the agent confirmation to the main message
+            confirm_msg.agents.append(agent)
+            confirm_msg.confirmations.append(confirm_agent_msg)
+        return confirm_msg
+    
+    def confirm_callback(self, msg):
+        print(msg)
+        confirm = self.unpack_confirm_msg(msg)
+        print(confirm) 
+        #TODOD: add the adapt plan function and remove the agent sending the request
+        
+    def unpack_confirm_msg(self, msg):
+        confirm = {}
+        for i in range(len(msg.agents)):
+            agent = msg.agents[i]
+            confirm[agent] = {}
+            for j in range(len(msg.confirmations[i].roi)):
+                roi = msg.confirmations[i].roi[j]
+                action = msg.confirmations[i].actions[j]
+                chosen = msg.confirmations[i].chosen[j]
+                time = msg.confirmations[i].time[j]
+                confirm[agent][(roi, action)] = (chosen, time)
+        return confirm    
+        
+        
+    #-----------------------------------------------------
+    # Check if given TS state is the next one in the plan
+    #-----------------------------------------------------
+    def is_next_state_in_plan(self, ts_state):
+        # check if the next state is in the detour path
+        if self.ltl_planner.segment == 'detour':
+            if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex+1]:
+                return True
+        else:
+            # calls the origina function
+            super().is_next_state_in_plan(ts_state)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#==============================
+#             Main
+#==============================
+def main():
+    rclpy.init()   
+    ltl_planner_node = SynchroPlanner() 
+    executor = MultiThreadedExecutor() 
+    executor.add_node(ltl_planner_node)
+    executor.spin()
+
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         #print(self.ltl_planner.action_dictionary)
         #self.ltl_planner.index = 2
-        request = self.ltl_planner.cooperative_action_in_horizon(30, self.chose_ROI)
+        #request = self.ltl_planner.cooperative_action_in_horizon(30, self.chose_ROI)
 
         
-        print('request: %s' % request)
-        print('run_line: %s' % self.ltl_planner.run.line)
-        print('run_loop: %s' % self.ltl_planner.run.loop)
-        print ('run_pre_plan: %s' % self.ltl_planner.run.pre_plan)
-        print ('run_pre_plan_cost: %s' % self.ltl_planner.run.pre_plan_cost)
+        #print('request: %s' % request)
+        #print('run_line: %s' % self.ltl_planner.run.line)
+        #print('run_loop: %s' % self.ltl_planner.run.loop)
+        #print ('run_pre_plan: %s' % self.ltl_planner.run.pre_plan)
+        #print ('run_pre_plan_cost: %s' % self.ltl_planner.run.pre_plan_cost)
         
-        self.ltl_planner.index = 0
+        #self.ltl_planner.index = 0
         
-        reply1 = self.ltl_planner.evaluate_request(request)
-        print('reply: %s' % reply1) 
-        print('paths: %s' % self.ltl_planner.path)
+        #reply1 = self.ltl_planner.evaluate_request(request)
+        #print('reply: %s' % reply1) 
+        #print('paths: %s' % self.ltl_planner.path)
 
-        reply2 = reply1.copy()
-        reply2[('r1','h1')] = (True, 50)
-        reply2[('r2','a2')] = (True, 20)
+        #reply2 = reply1.copy()
+        #reply2[('r1','h1')] = (True, 50)
+        #reply2[('r2','a2')] = (True, 20)
 
-        reply_dict={'/agent1': reply1, '/agent2': reply2, '/agent3': reply1}
+        #reply_dict={'/agent1': reply1, '/agent2': reply2, '/agent3': reply1}
         
         
-        confirm, time = self.ltl_planner.confirmation(request, reply_dict)
-        print('confirm: %s' % confirm)
-        print('time: %s' % time)
-        print(self.get_namespace())
-        print(confirm[self.get_namespace()])
+        #confirm, time = self.ltl_planner.confirmation(request, reply_dict)
+        #print('confirm: %s' % confirm)
+        #print('time: %s' % time)
+        #print(self.get_namespace())
+        #print(confirm[self.get_namespace()])
         
         
-        self.ltl_planner.adapt_plan(('r2', 'a2'), time) 
-        print(self.ltl_planner.detour_path)
-        print (self.ltl_planner.detour)
-        '''
+        #self.ltl_planner.adapt_plan(('r2', 'a2'), time) 
+        #print(self.ltl_planner.detour_path)
+        #print (self.ltl_planner.detour)
+    '''
         
         
         
@@ -169,72 +405,33 @@ class SynchroPlanner(MainPlanner):
             #print(item)
         #show_automaton(self.ltl_planner.product.graph['buchi'], 'guard_formula')
         #show_automaton(self.ltl_planner.product, 'action')
-    '''
-    
-    # returns just the first region for simplicity for now
-    def chose_ROI(self, dependency, *args, **kwargs):
-        return dependency[1][0]  
         
-
-    def set_initial_state(self):        
-        # if None then the initial state will be taken direcly from the dictionaries
-        if not self.initial_state_ts_dict == None:
-            # otherwise we modify the dictionaries to the state given 
-            self.motion_dict['initial'] =  self.initial_state_ts_dict[self.motion_dict['type']]
-            self.action_dict['initial'] =  self.initial_state_ts_dict[self.action_dict['type']]
-
-
-
-
-    #-----------------------------------------------------
-    # Check if given TS state is the next one in the plan
-    #-----------------------------------------------------
-    def is_next_state_in_plan(self, ts_state):
-        # check if the next state is in the detour path
-        if self.ltl_planner.segment == 'detour':
-            if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex+1]:
-                return True
-        else:
-            # calls the origina function
-            super().is_next_state_in_plan(ts_state)
         
-'''
+        
+        
+        
+        
+        
+        #for item in self.ltl_planner.product.edges(data=True):
+            #print(item)
+        print(self.ltl_planner.product.graph['initial'])    
 
- add a callback with timer that every horizon seconds checks  if there is a cooperative action in the plan
+        #show_automaton(self.ltl_planner.product, 'action')
+        print(self.ltl_planner.curr_ts_state)
+        print (self.ltl_planner.product.get_possible_states(('r3' , 'free')))
+        self.ltl_planner.update_possible_states(('r3' , 'free'))
+        print(self.ltl_planner.product.possible_states)
+        self.ltl_planner.update_possible_states(('r2' , 'free'))
+        print(self.ltl_planner.product.possible_states)
+        self.ltl_planner.update_possible_states(('r2' , 'l123'))
+        print(self.ltl_planner.product.possible_states)
+        print(self.ltl_planner.product[((('r2', 'free'), 'T0_S9'))][(('r2', 'l123'), 'T0_S9')]['action'])
+        print(self.ltl_planner.product[((('r2', 'free'), 'T0_S9'))][(('r2', 'l123'), 'T1_S7')]['action'])
  
- if there is then it sends a request (message in topic)
-
-
-
-'''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#==============================
-#             Main
-#==============================
-def main():
-    rclpy.init()   
-    ltl_planner_node = SynchroPlanner() 
-    executor = MultiThreadedExecutor() 
-    executor.add_node(ltl_planner_node)
-    executor.spin()
-
-
-
-if __name__ == '__main__':
-    main()
-    
+        
+        
+        
+        
+        
+        
+    '''  
