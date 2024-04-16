@@ -25,7 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
                 'try = ltl_automaton_synchronization.nodes.try:main',
-                'synchro = ltl_automaton_synchronization.nodes.synchro:main'
+                'synchro = ltl_automaton_synchronization.nodes.synchro:main',
+                'auto_actions = ltl_automaton_synchronization.nodes.auto_actions:main'
         ],
     },
 )

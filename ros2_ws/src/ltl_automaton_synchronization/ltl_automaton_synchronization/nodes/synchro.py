@@ -30,7 +30,7 @@ class SynchroPlanner(MainPlanner):
         super().__init__()
         self.timer_callback_group = ReentrantCallbackGroup()
         self.timer = self.create_timer(0.1, self.timer_callback, callback_group=self.timer_callback_group)
-        self.starting_time=0
+        self.starting_time=10
         
     def init_params(self):
                 
@@ -132,7 +132,7 @@ class SynchroPlanner(MainPlanner):
 
     def timer_callback(self):
         request=self.ltl_planner.cooperative_action_in_horizon(self.starting_time, self.chose_ROI)
-        self.starting_time += 1
+        #self.starting_time += 1
         if request:
             self.get_logger().info('Synchro Planner: Sending Collaboration Request')
             self.current_request = request
@@ -298,7 +298,7 @@ class SynchroPlanner(MainPlanner):
                 return True
         else:
             # calls the origina function
-            super().is_next_state_in_plan(ts_state)
+            return super().is_next_state_in_plan(ts_state)
 
 
 
