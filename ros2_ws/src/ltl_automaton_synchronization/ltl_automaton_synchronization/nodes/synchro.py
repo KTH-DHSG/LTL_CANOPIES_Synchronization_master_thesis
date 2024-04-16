@@ -7,7 +7,7 @@ from ltl_automaton_synchronization.transition_systems.ts_definitions import Moti
 from ltl_automaton_synchronization.planner.synchro_planner import sync_LTLPlanner
 from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 
-from ltl_automaton_messages.msg import SynchroAgentConfirm, SynchroConfirm, SynchroRequest, SynchroReply
+from ltl_automaton_messages.msg import SynchroConfirm, SynchroRequest, SynchroReply
 from ltl_automaton_planner.ltl_tools.discrete_plan import compute_path_from_pre, dijkstra_targets
 
 import networkx as nx
@@ -93,7 +93,7 @@ class SynchroPlanner(MainPlanner):
     def setup_pub_sub(self):
         # initializing orignial pub/sub
         super().setup_pub_sub()
-        
+        self.qos_profile_reply = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
         # creating a request publisher
         self.request_pub = self.create_publisher(SynchroRequest, '/synchro_request', self.qos_profile)
         
@@ -105,7 +105,7 @@ class SynchroPlanner(MainPlanner):
         for agent in self.agents:
             self.reply_publishers[agent]= self.create_publisher(SynchroReply, agent+'/synchro_reply', self.qos_profile)
         
-        self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile)
+        self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply)
            
         # creating a confirm publisher
         self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
@@ -134,6 +134,7 @@ class SynchroPlanner(MainPlanner):
         request=self.ltl_planner.cooperative_action_in_horizon(self.starting_time, self.chose_ROI)
         self.starting_time += 1
         if request:
+            self.get_logger().info('Synchro Planner: Sending Collaboration Request')
             self.current_request = request
             request_msg = self.build_request_msg(request)
             self.request_pub.publish(request_msg)
@@ -152,7 +153,8 @@ class SynchroPlanner(MainPlanner):
 
     def request_callback(self, msg):
         #FIXMED: add check to discard if i'm the sender, and multiple request case
-        agent, request = self.unpack_request_msg(msg)      
+        agent, request = self.unpack_request_msg(msg)
+        self.get_logger().info('Synchro Planner: Recieved Collaboration Request Form Agent: %s' %agent)     
         reply = self.ltl_planner.evaluate_request(request)
         reply_msg = self.build_reply_msg(reply)
         self.reply_publishers[agent].publish(reply_msg)
@@ -177,29 +179,45 @@ class SynchroPlanner(MainPlanner):
             reply_msg.time.append(value[1])
         return reply_msg
         
-    def reply_callback(self, msg):
-        
-        agent, reply = self.unpack_reply_msg(msg)
-        self.replies[agent] =  reply
+    def reply_callback(self, msg):               
+        # unpacking the reply message
+        agent, reply = self.unpack_reply_msg(msg)        
+        self.get_logger().info('Synchro Planner: Recieved Reply Form Agent: %s' %agent)     
+        # updating the number of replies recievd
         self.recieved_replies += 1
+        # if the agent can provide any help then we store the reply
+        # this reduces the MIP computation time
+        for result in reply.values():
+            if result[0]:
+                self.replies[agent] = reply
+                break
         
+        # TESTING
+        '''
         reply1 = reply.copy()
-        reply1[('r1','h1')] = (True, 50)
-        self.replies['/agent_2'] =  reply1
+        reply1[('r1','h1')] = (True, 50)        
         self.recieved_replies += 1
+        for result in reply1.values():
+            if result[0]:
+                self.replies['/agent_2'] = reply1
+                break
         
         reply2 = reply.copy()
-        reply2[('r2','a2')] = (True, 20)
-        self.replies['/agent_3'] =  reply2
+        reply2[('r2','a12')] = (True, 20)
         self.recieved_replies += 1
-        
+        for result in reply2.values():
+            if result[0]:
+                self.replies['/agent_3'] = reply2
+                break
+        '''
+        # END TESTING
+                
         if self.recieved_replies == len(self.agents):     
             confirm, time = self.ltl_planner.confirmation(self.current_request, self.replies)
             self.replies = {}
-            self.recieved_replies = 0 
-            confirm_msg = self.build_confirm_msg(confirm)
-            self.confirm_pub.publish(confirm_msg)
-            print(confirm)
+            self.recieved_replies = 0               
+            confirm_msg = self.build_confirm_msg(confirm, time)
+            self.confirm_pub.publish(confirm_msg)    
     
     def unpack_reply_msg(self, msg):
         # getting name of requesting agent
@@ -210,39 +228,64 @@ class SynchroPlanner(MainPlanner):
             reply[(msg.roi[i], msg.actions[i])] = (msg.available[i], msg.time[i])
         return agent, reply
     
-    def build_confirm_msg(self, confirm):
+    def build_confirm_msg(self, confirm, time):
         confirm_msg = SynchroConfirm()
-        for agent, result in confirm.items():
-            # building the confirmation for each agent
-            confirm_agent_msg = SynchroAgentConfirm()
-            for key, value in result.items():
-                confirm_agent_msg.roi.append(key[0])
-                confirm_agent_msg.actions.append(key[1])
-                confirm_agent_msg.chosen.append(bool(value[0]))
-                confirm_agent_msg.time.append(value[1])
-            # adding the agent confirmation to the main message
-            confirm_msg.agents.append(agent)
-            confirm_msg.confirmations.append(confirm_agent_msg)
+        # adding the master agent
+        confirm_msg.master = self.agent_name
+        # check if a confirmation is possible
+        if confirm == None:
+            # setting time to a negative value to indicate that the action is not possible
+            confirm_msg.time = -1.0
+        else:
+            # adding the time to execute the action
+            confirm_msg.time = time        
+            for agent, result in confirm.items():
+                # checking if agent has to help, if so adding the action to the message
+                for key, value in result.items():
+                    if bool(value[0]):
+                        confirm_msg.roi.append(key[0])
+                        confirm_msg.actions.append(key[1])
+                        confirm_msg.agents.append(agent)
+                        break
         return confirm_msg
     
     def confirm_callback(self, msg):
-        print(msg)
-        confirm = self.unpack_confirm_msg(msg)
-        print(confirm) 
-        #TODOD: add the adapt plan function and remove the agent sending the request
+        master, time, confirm = self.unpack_confirm_msg(msg)
+        self.get_logger().info('Synchro Planner: Recieved Confirmation Form Agent: %s' %master)     
+        
+        # check if the action is possible
+        if time == -1.0:
+            if master == self.agent_name:
+                print('I am the master')
+                #TODOD: delay collaboration by a certain amount of time
+            else:
+                print('I am not involved')
+                #TODOD: reset flags and all the other stuff   
+        else:
+            if master == self.agent_name:
+                print('I am the master')
+                #TODOD: adapt plan to meet the time if necessary
+                
+                # if wait in actions then no need to delaly               
+            elif self.agent_name in confirm:
+                print('I need to help')
+                #TODOD: adapt detour to meet the time if necessary and add detour to plan
+                
+                # if wait in actions then no need to delaly
+            else:
+                print('I am not involved')    
+                #TODOD: reset flags and all the other stuff 
+        
+        #TODOD: if queue start request again
+        
+        
         
     def unpack_confirm_msg(self, msg):
         confirm = {}
         for i in range(len(msg.agents)):
             agent = msg.agents[i]
-            confirm[agent] = {}
-            for j in range(len(msg.confirmations[i].roi)):
-                roi = msg.confirmations[i].roi[j]
-                action = msg.confirmations[i].actions[j]
-                chosen = msg.confirmations[i].chosen[j]
-                time = msg.confirmations[i].time[j]
-                confirm[agent][(roi, action)] = (chosen, time)
-        return confirm    
+            confirm[agent] = (msg.roi[i], msg.actions[i])
+        return msg.master, msg.time, confirm    
         
         
     #-----------------------------------------------------

@@ -41,7 +41,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LTLStateRuns.msg"
   "msg/TransitionSystemState.msg"
   "msg/TransitionSystemStateStamped.msg"
-  "msg/SynchroAgentConfirm.msg"
   "msg/SynchroConfirm.msg"
   "msg/SynchroReply.msg"
   "msg/SynchroRequest.msg"

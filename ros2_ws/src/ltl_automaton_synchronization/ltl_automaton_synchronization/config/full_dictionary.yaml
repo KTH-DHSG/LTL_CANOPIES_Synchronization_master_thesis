@@ -6,9 +6,15 @@ action:
       label: a2
       type: assisting
       weight: 30
+    a13:
+      dependency: {}
+      guard: r1 || r3
+      label: a1
+      type: assisting
+      weight: 30
     c13:
       dependency:
-        h1:
+        a13:
         - r1
         - r3
         a2:
@@ -16,7 +22,7 @@ action:
       guard: r1 || r3
       label: c13
       type: collaborative
-      weight: 10
+      weight: 30
     free:
       dependency: {}
       guard: '1'
