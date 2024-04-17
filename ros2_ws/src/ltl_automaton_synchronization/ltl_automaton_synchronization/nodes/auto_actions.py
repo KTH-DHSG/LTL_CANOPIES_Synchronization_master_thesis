@@ -6,8 +6,6 @@ from ltl_automaton_synchronization.transition_systems.ts_definitions import Moti
 from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
 from std_msgs.msg import String, Header
 import yaml
-import time
-import asyncio
 
 
 
@@ -58,18 +56,13 @@ class SynchroActions(Node):
     def action_callback(self, msg):
         next_state = ''
         weight = 0
-        print('Current state: ' + str(self.current_state))
         for state in self.robot_model.successors(self.current_state):
             if self.robot_model[self.current_state][state]['action'] == msg.data:
-                print(self.robot_model[self.current_state][state]['weight'])
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
                 self.current_state = state                
                 break
 
-        print('Action: ' + msg.data)
-        print('weight: ' + str(weight))
-        print('Next state: ' + str(next_state))
         start_time=self.get_clock().now().to_msg().sec
         while(self.get_clock().now().to_msg().sec-start_time<weight):
             pass
@@ -84,9 +77,8 @@ class SynchroActions(Node):
         header_msg = Header()
         header_msg.stamp = self.get_clock().now().to_msg()
         next_state_msg.header = header_msg
-        print('publishing next state')
+        self.get_logger().info('ACTION NODE: Publishing State: %s. After Action: %s' %(str(next_state), msg.data))
         self.state_pub.publish(next_state_msg)
-        print('next state published')
             
 
 

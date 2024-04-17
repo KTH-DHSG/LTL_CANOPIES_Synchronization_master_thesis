@@ -152,7 +152,6 @@ class SynchroPlanner(MainPlanner):
         return request_msg
 
     def request_callback(self, msg):
-        #FIXMED: add check to discard if i'm the sender, and multiple request case
         agent, request = self.unpack_request_msg(msg)
         self.get_logger().info('Synchro Planner: Recieved Collaboration Request Form Agent: %s' %agent)     
         reply = self.ltl_planner.evaluate_request(request)
@@ -264,8 +263,10 @@ class SynchroPlanner(MainPlanner):
         else:
             if master == self.agent_name:
                 print('I am the master')
-                #TODOD: adapt plan to meet the time if necessary
-                
+                # update contract time
+                self.ltl_planner.contract_time = time
+                #add list of helping agents?
+                #TODOD: adapt plan to meet the time if necessary                
                 # if wait in actions then no need to delaly               
             elif self.agent_name in confirm:
                 print('I need to help')
