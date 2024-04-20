@@ -149,7 +149,6 @@ class Region2DPoseStateMonitor(Node):
                     if (self.region_dict["nodes"][reg]["attr"]["type"] == "station"):
                         station_pose = self.region_dict["nodes"][reg]["attr"]["pose"]
                         station_radius = self.region_dict["nodes"][reg]["attr"]["radius"]
-                        #FIXMED:  does it make any sense to have a negative distance?
                         dist = self.dist_2d_err(pose, station_pose) - station_radius
 
                     # If region is a square

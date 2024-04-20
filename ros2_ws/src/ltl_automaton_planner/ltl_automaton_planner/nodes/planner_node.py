@@ -306,7 +306,6 @@ class MainPlanner(Node):
                 # If state is next state in plan, find next_move and output
                 if self.is_next_state_in_plan(state):
                     self.ltl_planner.find_next_move()
-
                     # Publish next move
                     self.get_logger().info('LTL planner: Publishing next move')
                     next_move_msg = String()

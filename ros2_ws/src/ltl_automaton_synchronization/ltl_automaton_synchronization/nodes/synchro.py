@@ -5,10 +5,9 @@ from ltl_automaton_planner.ltl_tools.ltl_planner import LTLPlanner
 from ltl_automaton_planner.nodes.planner_node import MainPlanner
 from ltl_automaton_synchronization.transition_systems.ts_definitions import MotionTS, ActionModel, MotActTS
 from ltl_automaton_synchronization.planner.synchro_planner import sync_LTLPlanner
-from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
-
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
+from ltl_automaton_messages.srv import FinishCollab
 from ltl_automaton_messages.msg import SynchroConfirm, SynchroRequest, SynchroReply
-from ltl_automaton_planner.ltl_tools.discrete_plan import compute_path_from_pre, dijkstra_targets
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -30,7 +29,6 @@ class SynchroPlanner(MainPlanner):
         super().__init__()
         self.timer_callback_group = ReentrantCallbackGroup()
         self.timer = self.create_timer(0.1, self.timer_callback, callback_group=self.timer_callback_group)
-        self.starting_time=10
         
     def init_params(self):
                 
@@ -52,11 +50,16 @@ class SynchroPlanner(MainPlanner):
         
         # getting all the agents involved
         self.agents = self.declare_parameter('agents', []).value 
-        # removing the current agent from the list
-        #self.agents.remove(self.agent_name)
+        
+        # getting all the agents involved
+        self.time_horizon = self.declare_parameter('time_horizon', 10).value 
+
         
         # initializing request that needs to be processed
         self.current_request = {}
+        
+        # initializing the request queue
+        self.request_queue = []
         
         # initializing replies dictionary
         self.replies = {}
@@ -113,7 +116,10 @@ class SynchroPlanner(MainPlanner):
         # creating a confirm subscirber
         self.confirm_sub = self.create_subscription(SynchroConfirm, '/synchro_confirm', self.confirm_callback, self.qos_profile)
         
-        
+        #creating service to update planner after a collaboration
+        finished_collab_srv_cb_group = MutuallyExclusiveCallbackGroup()
+        self.finished_collab_srv = self.create_service(FinishCollab, 'finished_collab', self.finished_collab_callback, callback_group=finished_collab_srv_cb_group)
+         
         
         
     
@@ -131,11 +137,10 @@ class SynchroPlanner(MainPlanner):
 
 
     def timer_callback(self):
-        request=self.ltl_planner.cooperative_action_in_horizon(self.starting_time, self.chose_ROI)
-        #self.starting_time += 1
+        request=self.ltl_planner.cooperative_action_in_horizon(self.time_horizon, self.chose_ROI)
         if request:
             self.get_logger().info('Synchro Planner: Sending Collaboration Request')
-            self.current_request = request
+            #self.current_request = request
             request_msg = self.build_request_msg(request)
             self.request_pub.publish(request_msg)
 
@@ -154,9 +159,16 @@ class SynchroPlanner(MainPlanner):
     def request_callback(self, msg):
         agent, request = self.unpack_request_msg(msg)
         self.get_logger().info('Synchro Planner: Recieved Collaboration Request Form Agent: %s' %agent)     
-        reply = self.ltl_planner.evaluate_request(request)
-        reply_msg = self.build_reply_msg(reply)
-        self.reply_publishers[agent].publish(reply_msg)
+        # I'm not processing another request
+        if not self.current_request: 
+            self.get_logger().info('Synchro Planner: Processing Collaboration Request Form Agent: %s' %agent)    
+            self.current_request = request            
+            reply = self.ltl_planner.evaluate_request(request)
+            reply_msg = self.build_reply_msg(reply)
+            self.reply_publishers[agent].publish(reply_msg)
+        else:
+            # if I'm processing another request then I add the request to the queue
+            self.request_queue.append((agent, request))
     
     def unpack_request_msg(self, msg):
         # getting name of requesting agent
@@ -190,27 +202,8 @@ class SynchroPlanner(MainPlanner):
             if result[0]:
                 self.replies[agent] = reply
                 break
-        
-        # TESTING
-        '''
-        reply1 = reply.copy()
-        reply1[('r1','h1')] = (True, 50)        
-        self.recieved_replies += 1
-        for result in reply1.values():
-            if result[0]:
-                self.replies['/agent_2'] = reply1
-                break
-        
-        reply2 = reply.copy()
-        reply2[('r2','a12')] = (True, 20)
-        self.recieved_replies += 1
-        for result in reply2.values():
-            if result[0]:
-                self.replies['/agent_3'] = reply2
-                break
-        '''
-        # END TESTING
                 
+        # once all the replies are recieved we can confirm the collaboration
         if self.recieved_replies == len(self.agents):     
             confirm, time = self.ltl_planner.confirmation(self.current_request, self.replies)
             self.replies = {}
@@ -248,69 +241,85 @@ class SynchroPlanner(MainPlanner):
                         break
         return confirm_msg
     
+    
+    
     def confirm_callback(self, msg):
         master, time, confirm = self.unpack_confirm_msg(msg)
         self.get_logger().info('Synchro Planner: Recieved Confirmation Form Agent: %s' %master)     
         
-        # check if the action is possible
+        # if no solution exists
         if time == -1.0:
+            # I'm the agent who sent the request
             if master == self.agent_name:
-                print('I am the master')
-                #TODOD: delay collaboration by a certain amount of time
+                self.get_logger().warning('I need to delay collaboration')
+                # we delay the collaboration by a time horizon
+                self.ltl_planner.delay_collaboration(self.time_horizon)
+            
+            # I'm an agent who answered the request
             else:
-                print('I am not involved')
-                #TODOD: reset flags and all the other stuff   
+                self.get_logger().warning('I am not involved')
+                # empty the paths created while processing the request
+                self.ltl_planner.path = {} 
+        
+        # if a solution exists
         else:
+            # I'm the agent who sent the request
             if master == self.agent_name:
-                print('I am the master')
+                self.get_logger().warning('I am the master')
                 # update contract time
                 self.ltl_planner.contract_time = time
                 #add list of helping agents?
-                #TODOD: adapt plan to meet the time if necessary                
-                # if wait in actions then no need to delaly               
+                #TODOD: adapt plan to meet the time if necessary if wait in actions then no need to delaly                             
             elif self.agent_name in confirm:
-                print('I need to help')
+                self.get_logger().warning('I need to help')
                 #TODOD: adapt detour to meet the time if necessary and add detour to plan
-                
+                self.ltl_planner.adapt_plan(confirm[self.agent_name], time)
                 # if wait in actions then no need to delaly
             else:
-                print('I am not involved')    
-                #TODOD: reset flags and all the other stuff 
+                self.get_logger().warning('I am not involved')    
+                # empty the paths created while processing the request
+                self.ltl_planner.path = {} 
         
-        #TODOD: if queue start request again
+        # if there are requests in the queue then we process them
+        if self.request_queue:
+            # get the first request in the queue
+            agent, request = self.request_queue.pop(0)
+            self.get_logger().info('Synchro Planner: Processing Collaboration Request Form Agent: %s' %agent)    
+            self.current_request = request            
+            reply = self.ltl_planner.evaluate_request(request)
+            reply_msg = self.build_reply_msg(reply)
+            self.reply_publishers[agent].publish(reply_msg)
+        else:
+            # empty the current request
+            self.current_request = {}
         
-        
-        
+            
     def unpack_confirm_msg(self, msg):
         confirm = {}
         for i in range(len(msg.agents)):
             agent = msg.agents[i]
             confirm[agent] = (msg.roi[i], msg.actions[i])
-        return msg.master, msg.time, confirm    
-        
-        
+        return msg.master, msg.time, confirm   
+    
+    def finished_collab_callback(self, request, response):
+        self.get_logger().info('Synchro Planner: Collaboration Finished')
+        # updates the planner after a collaboration
+        self.ltl_planner.contract_time = 0
+        return response
+     
     #-----------------------------------------------------
     # Check if given TS state is the next one in the plan
     #-----------------------------------------------------
     def is_next_state_in_plan(self, ts_state):
+        print('ts_state: %s' % str(ts_state))
+        print('segment: %s' % self.ltl_planner.segment)
         # check if the next state is in the detour path
         if self.ltl_planner.segment == 'detour':
-            if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex+1]:
+            if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex]:
                 return True
         else:
             # calls the origina function
             return super().is_next_state_in_plan(ts_state)
-
-
-
-
-
-
-
-
-
-
-
 
 
 

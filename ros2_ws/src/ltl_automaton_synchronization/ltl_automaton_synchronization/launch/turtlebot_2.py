@@ -5,7 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    
+    agents = ['/agent_1', '/turtlebot_1', '/turtlebot_2', '/rosie_1']
     
     action_node= Node(
             package='ltl_automaton_synchronization',
@@ -16,11 +16,11 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'full_dictionary.yaml')},
-
+                {'agents': agents},
             ]
         )   
 
-    agents = ['/agent_1', '/turtlebot_1', '/turtlebot_2']
+
     
     planner_node= Node(
             package='ltl_automaton_synchronization',

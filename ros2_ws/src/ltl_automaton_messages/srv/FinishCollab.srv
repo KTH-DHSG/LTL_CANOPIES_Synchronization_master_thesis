@@ -1,0 +1,6 @@
+# Service message for trap checking in a LTL automaton
+# no input since it is just a trigger service
+
+---
+
+# no return values

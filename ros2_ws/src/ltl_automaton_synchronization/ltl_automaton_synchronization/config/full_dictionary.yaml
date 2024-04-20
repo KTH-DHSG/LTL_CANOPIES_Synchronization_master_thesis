@@ -5,13 +5,13 @@ action:
       guard: r2
       label: a2
       type: assisting
-      weight: 30
+      weight: 10
     a13:
       dependency: {}
       guard: r1 || r3
-      label: a1
+      label: a13
       type: assisting
-      weight: 30
+      weight: 10
     c13:
       dependency:
         a13:
@@ -22,7 +22,7 @@ action:
       guard: r1 || r3
       label: c13
       type: collaborative
-      weight: 30
+      weight: 10
     free:
       dependency: {}
       guard: '1'

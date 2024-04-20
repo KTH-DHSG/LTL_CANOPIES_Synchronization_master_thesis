@@ -64,7 +64,6 @@ class ActionModel(object):
         self.action = action_dict['actions']
         self.ts_type = action_dict['type']
         self.initial = action_dict['initial']
-        # add a 'None' action
         #TODOD: check where to add initial action
         #FIXMED: NO LABEL FOR THE ACTION so not sure this respects meng but may not work it did not work 
         
@@ -88,7 +87,7 @@ class MotActTS(DiGraph):
     def composition(self, reg, act):
         prod_node = (reg, act)
         if not self.has_node(prod_node):
-            # FIXMED: modification to make action none ans state free
+            # modification to make action none as state free
             self.add_node(prod_node, label=prod_node, region=self.graph['region'].nodes[reg]['pose'], action=act, marker='unvisited')
         return prod_node 
     

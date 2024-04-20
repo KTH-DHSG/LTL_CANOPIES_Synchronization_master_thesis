@@ -11,7 +11,7 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='auto_actions',
             name='auto_actions',
-            namespace='turtlebot_1',
+            namespace='rosie_1',
             emulate_tty=True,
             output='screen',
             parameters=[
@@ -25,13 +25,13 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='synchro',
             name='ltl_synchro_planner',
-            namespace='turtlebot_1',
+            namespace='rosie_1',
             emulate_tty=True,
             output='screen',
             parameters=[
                 {'initial_beta': 1000},
                 {'gamma': 10},
-                {'hard_task':'[]<> (r2)' },#"(r1 && (X r3) && (X X c13))"
+                {'hard_task':'[]<> (r1)' },#"(r1 && (X r3) && (X X c13))"
                 #X r3 && (<> r2) && ([]<> r1)
                 #'[]<> (r2 && l123 && (X<> (r3 && c13)))'
                 # "((r1 && (X r3) && (X X c13)) && ([]<> (l123 && r2))"

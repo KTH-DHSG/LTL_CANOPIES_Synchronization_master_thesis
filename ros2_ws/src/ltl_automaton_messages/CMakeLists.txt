@@ -45,6 +45,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SynchroReply.msg"
   "msg/SynchroRequest.msg"
   "srv/ClosestState.srv"
+  "srv/FinishCollab.srv"
   "srv/TaskPlanning.srv"
   "srv/TrapCheck.srv"
   "srv/DynamicParameters.srv"
