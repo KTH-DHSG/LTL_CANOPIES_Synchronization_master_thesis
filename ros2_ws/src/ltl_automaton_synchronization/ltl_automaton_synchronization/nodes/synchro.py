@@ -204,8 +204,13 @@ class SynchroPlanner(MainPlanner):
                 break
                 
         # once all the replies are recieved we can confirm the collaboration
-        if self.recieved_replies == len(self.agents):     
-            confirm, time = self.ltl_planner.confirmation(self.current_request, self.replies)
+        if self.recieved_replies == len(self.agents):
+            # filtering replies to reduce the number of agents involved in the MIP
+            max_agents_action = 1
+            t_m = list(self.current_request.values())[0]
+            filtered_replies = self.filter_replies(self.replies, max_agents_action, t_m) 
+            # getting the confirmation
+            confirm, time = self.ltl_planner.confirmation(self.current_request, filtered_replies)
             # empty the replies dictionary
             self.replies = {}
             # reset the number of replies recieved
@@ -243,7 +248,40 @@ class SynchroPlanner(MainPlanner):
                         break
         return confirm_msg
     
-    
+    def filter_replies(self, replies, max_agents_action, t_m):
+        useful_agents = []
+        formatted_replies = {}
+        filtered_replies = {}
+        for agent, reply in replies.items():
+            for key, value in reply.items():
+                # during the first iteration i create the values as a list
+                if key not in formatted_replies:
+                    formatted_replies[key] = []
+                # consider only agents who can actually help with the specific action
+                if value[0]:
+                    formatted_replies[key].append((agent, abs(value[1]-t_m)))
+        for key, value in formatted_replies.items():
+            # sorting in ascending order of time
+            value.sort(key=lambda x: x[1])
+            # adding the first max_agents_action that are not already present for that action
+            i=0 # counter for the number of agents added for the specific action
+            j=0 # counter for the agents in the list
+            while i < max_agents_action and j < len(value):
+                # adding them only once
+                print(i)
+                if value[j][0] not in useful_agents:
+                    useful_agents.append(value[j][0])
+                    # incrementing number of agents added for the specific action
+                    i+=1
+                # incrementing number of agents seen in the list
+                j+=1
+        # filtering the replies
+        for agent in useful_agents:
+            filtered_replies[agent] = replies[agent]
+        
+        return filtered_replies
+        
+
     
     def confirm_callback(self, msg):
         master, time, confirm = self.unpack_confirm_msg(msg)
