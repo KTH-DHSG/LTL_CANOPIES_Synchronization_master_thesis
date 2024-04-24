@@ -14,8 +14,8 @@ from geometry_msgs.msg import Twist
 import sys
 
 #Import LTL automaton message definitions
-from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState
-from ltl_automaton_messages.srv import ClosestState, TrapCheck
+from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState
+from ltl_automaton_msg_srv.srv import ClosestState, TrapCheck
 
 #==============================================
 #         Mix Initative Controller object

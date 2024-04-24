@@ -23,8 +23,8 @@ import networkx as nx
 from ltl_automaton_planner.ltl_automaton_utilities import state_models_from_ts, import_ts_from_file, handle_ts_state_msg
 
 # Import LTL automaton message definitions
-from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
-from ltl_automaton_messages.srv import TaskPlanning, DynamicParameters
+from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
+from ltl_automaton_msg_srv.srv import TaskPlanning, DynamicParameters
 
 
 def show_automaton(automaton_graph):

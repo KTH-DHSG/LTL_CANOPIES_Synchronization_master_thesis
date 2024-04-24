@@ -8,7 +8,7 @@ from std_msgs.msg import String
 from tf_transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply
 # For function "import_ts_from_file"
 from ltl_automaton_planner.ltl_automaton_utilities import import_ts_from_file
-from ltl_automaton_messages.srv import ClosestState
+from ltl_automaton_msg_srv.srv import ClosestState
 
 #=====================================
 #      Monitor agent pose and

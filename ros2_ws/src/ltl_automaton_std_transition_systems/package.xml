@@ -14,7 +14,7 @@
 
 
   <depend>rclpy</depend>
-  <depend>ltl_automaton_messages</depend>
+  <depend>ltl_automaton_msg_srv</depend>
   <depend>geometry_msgs</depend>
   <depend>message_generation</depend>
   <exec_depend>ltl2ba</exec_depend>

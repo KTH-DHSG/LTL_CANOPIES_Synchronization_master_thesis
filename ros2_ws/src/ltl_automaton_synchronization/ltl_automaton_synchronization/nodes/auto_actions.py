@@ -4,11 +4,11 @@ from rclpy.node import Node
 from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 import networkx as nx
 from ltl_automaton_synchronization.transition_systems.ts_definitions import MotionTS, ActionModel, MotActTS
-from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
-from ltl_automaton_messages.srv import FinishCollab
+from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
+from ltl_automaton_msg_srv.srv import FinishCollab
 from std_msgs.msg import String, Header
 import yaml
-from ltl_automaton_messages.msg import SynchroConfirm
+from ltl_automaton_msg_srv.msg import SynchroConfirm
 
 
 
@@ -34,7 +34,7 @@ class SynchroActions(Node):
         self.agent = self.get_namespace()
         
         # list of agents names
-        self.agents = self.declare_parameter('agents', []).value
+        self.agents = self.declare_parameter('agents', ['']).value
         
         # agents involved in the collaboration
         self.collaborative_agents = {'master':'', 'assisting_agents':[]}
@@ -77,7 +77,8 @@ class SynchroActions(Node):
 
         # Subscriber for the synchro ready message
         ready_cb_group = ReentrantCallbackGroup()
-        self.synchro_ready_sub = self.create_subscription(String, 'synchro_ready', self.synchro_ready_callback, self.qos_profile, callback_group=ready_cb_group)
+        self.qos_profile_ready = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        self.synchro_ready_sub = self.create_subscription(String, 'synchro_ready', self.synchro_ready_callback, self.qos_profile_ready, callback_group=ready_cb_group)
 
         # Subscriber for the synchro start message
         self.synchro_start_sub = self.create_subscription(String, 'synchro_start', self.synchro_start_callback, self.qos_profile)
@@ -176,6 +177,7 @@ class SynchroActions(Node):
         self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
         #send ready to master
         self.synchro_ready_pubs[master].publish(String(data=self.agent))
+        print('published')
         # wait until a confirmation is given by the master
         while not self.start_assising_flag:
             pass

@@ -6,8 +6,8 @@ from ltl_automaton_planner.nodes.planner_node import MainPlanner
 from ltl_automaton_synchronization.transition_systems.ts_definitions import MotionTS, ActionModel, MotActTS
 from ltl_automaton_synchronization.planner.synchro_planner import sync_LTLPlanner
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
-from ltl_automaton_messages.srv import FinishCollab
-from ltl_automaton_messages.msg import SynchroConfirm, SynchroRequest, SynchroReply
+from ltl_automaton_msg_srv.srv import FinishCollab
+from ltl_automaton_msg_srv.msg import SynchroConfirm, SynchroRequest, SynchroReply
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ class SynchroPlanner(MainPlanner):
         self.agent_name = self.get_namespace()
         
         # getting all the agents involved
-        self.agents = self.declare_parameter('agents', []).value 
+        self.agents = self.declare_parameter('agents', ['']).value 
         
         # getting all the agents involved
         self.time_horizon = self.declare_parameter('time_horizon', 10).value 
@@ -206,7 +206,9 @@ class SynchroPlanner(MainPlanner):
         # once all the replies are recieved we can confirm the collaboration
         if self.recieved_replies == len(self.agents):     
             confirm, time = self.ltl_planner.confirmation(self.current_request, self.replies)
+            # empty the replies dictionary
             self.replies = {}
+            # reset the number of replies recieved
             self.recieved_replies = 0               
             confirm_msg = self.build_confirm_msg(confirm, time)
             self.confirm_pub.publish(confirm_msg)    
@@ -311,9 +313,10 @@ class SynchroPlanner(MainPlanner):
     # Check if given TS state is the next one in the plan
     #-----------------------------------------------------
     def is_next_state_in_plan(self, ts_state):
-        print('ts_state: %s' % str(ts_state))
-        print('segment: %s' % self.ltl_planner.segment)
         # check if the next state is in the detour path
+        print('is_next_state_in_plan')
+        print(self.ltl_planner.segment)
+        print(ts_state)
         if self.ltl_planner.segment == 'detour':
             if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex]:
                 return True

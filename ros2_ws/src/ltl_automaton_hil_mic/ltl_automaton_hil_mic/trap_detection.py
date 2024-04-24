@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from ltl_automaton_messages.srv import TrapCheck
+from ltl_automaton_msg_srv.srv import TrapCheck
 from networkx import dijkstra_predecessor_and_distance, has_path
 from ltl_automaton_planner.ltl_automaton_utilities import handle_ts_state_msg
 from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup

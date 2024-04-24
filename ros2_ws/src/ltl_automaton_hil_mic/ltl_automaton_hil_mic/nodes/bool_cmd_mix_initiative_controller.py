@@ -11,8 +11,8 @@ from std_msgs.msg import Bool
 from ltl_automaton_planner.ltl_automaton_utilities import import_ts_from_file
 
 #Import LTL automaton message definitions
-from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState
-from ltl_automaton_messages.srv import TrapCheck
+from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState
+from ltl_automaton_msg_srv.srv import TrapCheck
 
 #=============================================
 #       Mix Initative Controller object

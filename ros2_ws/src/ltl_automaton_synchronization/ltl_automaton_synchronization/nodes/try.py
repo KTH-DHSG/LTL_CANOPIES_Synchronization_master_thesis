@@ -1,5 +1,5 @@
-from ltl_automaton_messages.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLStateArray
-from ltl_automaton_messages.srv import ClosestState, TaskPlanning
+from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLStateArray
+from ltl_automaton_msg_srv.srv import ClosestState, TaskPlanning
 from ltl_automaton_planner.ltl_tools.buchi import *
 from ltl_automaton_planner.ltl_tools.discrete_plan import *
 from ltl_automaton_planner.ltl_tools.ltl_planner import *

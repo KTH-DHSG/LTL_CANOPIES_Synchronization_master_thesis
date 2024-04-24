@@ -16,6 +16,7 @@ class sync_LTLPlanner(LTLPlanner):
         self.detour_path = []
         self.detour = []
         self.new_segment = ''
+        self.past_segment = ''
         super().__init__(ros_node, ts, hard_spec, soft_spec, beta, gamma)
 
         
@@ -120,7 +121,7 @@ class sync_LTLPlanner(LTLPlanner):
                 # again because want to go back to the initial state
                 path[t_ts_node], time_ready, detour_time = self.shortest_path_ts(ts, f_ts_node, t_ts_node)
                 # FIXMED: done to do the same thing as Meng's code i would use abs(time_ready-time)
-                reply[t_ts_node] = (True, time_ready + alpha*abs(time_ready-time))
+                reply[t_ts_node] = (True, time_ready)
         # save the path dictionary
         self.path = path.copy()
         return reply
@@ -141,12 +142,14 @@ class sync_LTLPlanner(LTLPlanner):
         self.ros_node.get_logger().warn('Adapting plan to detour')
 
         self.detour_path = self.path[t_ts_node]
+        # empty the detour list
+        self.detour = []
         for i in range(len(self.detour_path)-1):
             action = self.product.graph['ts'][self.detour_path[i]][self.detour_path[i+1]]['action']
             self.detour.append(action)
         # empty the path    
         self.path = {}
-        # FIXMED: not working correctly
+        # saving the current updating index
         self.dindex = 0
         self.contract_time = time
         # saving past segment type to know where to start again 
@@ -202,11 +205,16 @@ class sync_LTLPlanner(LTLPlanner):
     def find_next_move(self):
         # I have a detour to complete
         if self.segment == 'detour':
+            self.ros_node.get_logger().warn('in detour')
+            self.ros_node.get_logger().warn(str(self.segment))
+            self.ros_node.get_logger().warn(str(self.index))
+            self.ros_node.get_logger().warn(str(self.dindex))
             # I'm starting a detour 
             if self.dindex == 0:
                 # if index is not the last of the pre_plan...
                 if self.past_segment == 'line' and self.index < len(self.run.pre_plan)-1:
                     # Add the node that has been visited to trace
+                    self.ros_node.get_logger().warn('case0')
                     self.trace.append(self.run.line[self.index])
                     # Increment index counter
                     self.index += 1
@@ -214,6 +222,7 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'line'
                 # If index is the last of the pre-plan or equivalently if the pre_plan is short...
                 elif (self.past_segment == 'line') and ((self.index == len(self.run.pre_plan)-1) or (len(self.run.pre_plan) <= 1)):
+                    self.ros_node.get_logger().warn('case1')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.line[self.index])
                     # Reset index for the suffix loop
@@ -222,6 +231,7 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'loop'
                 # If index is not the last of the suffix plan or equivalently the suf_plan is short...
                 elif self.past_segment == 'loop' and self.index < len(self.run.suf_plan)-1:
+                    self.ros_node.get_logger().warn('case2')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
                     # Increment the index
@@ -230,6 +240,7 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'loop'
                 # If index is the last element of the suf_plan or equivalently the suf_plan is short....
                 elif (self.segment == 'loop') and ((self.index == len(self.run.suf_plan)-1) or (len(self.run.suf_plan) <= 1)):
+                    self.ros_node.get_logger().warn('case3')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
                     # Resent index 
@@ -241,7 +252,11 @@ class sync_LTLPlanner(LTLPlanner):
                 # Increment index counter
                 self.dindex += 1
             # i'm in the middle of a detour
-            elif self.dindex < len(self.detour)-1:                
+            elif self.dindex < len(self.detour)-1:
+                print('error1')
+                print(self.detour_path)
+                print(self.dindex)
+                print(self.detour)              
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -250,17 +265,23 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1                
             # i'm finishing a detour
             elif self.dindex == len(self.detour)-1:
+                print('error2')
+                print(self.detour_path)
+                print(self.dindex)
+                print(self.detour)
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
                 self.next_move = self.detour[self.dindex]
                 # Increment index counter#TODOD:check if i can remove this 
-                self.dindex += 1                
+                self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
+                print(self.segment)
                 #IMPORTANTD: decide when we consider a detour finished
                 self.contract_time = 0
             # returning the next move
+            print(self.next_move)
             return self.next_move
         else:
             # Use original function

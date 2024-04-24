@@ -10,8 +10,9 @@
   <test_depend>python3-pytest</test_depend>
 
 
+
   <depend>rclpy</depend>
-  <depend>ltl_automaton_messages</depend>
+  <depend>ltl_automaton_msg_srv</depend>
   <depend>ltl_automaton_planner</depend>
   <exec_depend>ros2launch</exec_depend>
   

@@ -11,7 +11,7 @@
 
 
   <depend>rclpy</depend>
-  <depend>ltl_automaton_messages</depend>
+  <depend>ltl_automaton_msg_srv</depend>
   <exec_depend>ltl2ba</exec_depend>
   <exec_depend>ros2launch</exec_depend>
   
