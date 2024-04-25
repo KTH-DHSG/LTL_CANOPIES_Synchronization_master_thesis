@@ -44,8 +44,6 @@ class MotionFts(DiGraph):
         return node
 
 
-#IMPORTANTD: not sure what symbols are fore so leave it like that for now but may be removed
-   
 
 class MotionFts2(DiGraph):
     
@@ -83,7 +81,7 @@ class MotionFts2(DiGraph):
                 possible_nodes.append(node)
         # if the pose is not in the graph, raise an exception
         if len(possible_nodes) == 0:
-            # TODOD:change from Exception to return None
+
             raise Exception("No node found for the given pose")
         # if the pose is in the graph, return the closest node
         node = min(possible_nodes, key= lambda n: distance(self.nodes[n]['pose'],pose))        
@@ -125,7 +123,7 @@ class MotionFts3(DiGraph):
                 possible_nodes.append(node)
         # if the pose is not in the graph, raise an exception
         if len(possible_nodes) == 0:
-            # TODOD:change from Exception to return None
+
             raise Exception("No node found for the given pose")        
         # if the pose is in the graph, return the closest node        
         node = min(possible_nodes, key= lambda n: distance(self.nodes[n]['pose'],pose))       
@@ -133,7 +131,6 @@ class MotionFts3(DiGraph):
 
         
         """
-    #IMPORTANTD: probably not needed becasue we don't consider obstacle regions
     def add_un_edges(self, edge_list, unit_cost=1):
         for edge in edge_list:
             f_node = edge[0]
@@ -142,7 +139,6 @@ class MotionFts3(DiGraph):
             self.add_edge(f_node, t_node, weight=dist*unit_cost)
             self.add_edge(t_node, f_node, weight=dist*unit_cost)
 
-    # IMPORTANTD:this part is probbly not needed if we don't modify the regions but consider them static
     def update_after_region_change(self, sense_info, com_info, margin=10):
         # sense_info = {'label':set((x,y), l', l'_)), 'edge':(set(add_edges), set(del_edges))}
         # com_info = set((x,y), l', l'_))

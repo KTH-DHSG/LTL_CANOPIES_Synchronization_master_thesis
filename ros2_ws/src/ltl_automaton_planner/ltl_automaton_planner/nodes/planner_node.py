@@ -59,7 +59,6 @@ class MainPlanner(Node):
     
     def init_params(self):
         
-        #IMPORTANTD: all publisher and subscriber must have the same exact qos profile
         # define QoS profile
         # depth and history are used to set a quiesize of 1 while durability is to store messages for late subscribers
         self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)

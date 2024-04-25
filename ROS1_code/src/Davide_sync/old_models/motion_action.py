@@ -45,7 +45,6 @@ class MotActModel2(DiGraph):
                         prod_node_to = self.composition(reg, act_to)
                         if(act=='None'):
                             # add edge from None to action
-                            #IMPORTANTD: chnaged label to action (just the name to adapt to the planner)
                             self.add_edge((reg, act), prod_node_to, weight=self.graph['action'].action[act_to][0], action= act_to, marker= 'visited')
                         # add edge from action to None
                         self.add_edge(prod_node_to, (reg, 'None'), weight=self.graph['action'].action['None'][0], action= 'none', marker= 'visited')
@@ -99,7 +98,6 @@ class MotActModel3(DiGraph):
                         # create action node
                         if(act=='None'):
                             # add edge from None to action
-                            #IMPORTANTD: chnaged label to action (just the name to adapt to the planner)
                             self.add_edge((reg, act), (reg, act_to), weight=self.graph['action'].action[act_to]['weight'], action= act_to, marker= 'visited')
                         # add edge from action to None
                         self.add_edge((reg, act_to), (reg, 'None'), weight=self.graph['action'].action['None']['weight'], action= 'none', marker= 'visited')
@@ -112,7 +110,6 @@ class MotActModel3(DiGraph):
         
 
 
-    #IMPORTANTD: other original functions but probably useless
         """
         
     def build_initial(self):

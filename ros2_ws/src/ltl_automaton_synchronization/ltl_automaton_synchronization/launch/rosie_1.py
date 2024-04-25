@@ -15,7 +15,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'full_dictionary.yaml')},
+                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'rosie_1.yaml')},
                 {'agents': agents},
             ]
         )   
@@ -38,7 +38,7 @@ def generate_launch_description():
                 # '(r1 && (X r3) && (X X c13)) && ([]<> (r2 && l123 && (X<> (r3 && c13))))'
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
-                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'full_dictionary.yaml')},
+                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('ltl_automaton_synchronization'), 'config', 'rosie_1.yaml')},
                 {'agents': agents},
             ]
         )   

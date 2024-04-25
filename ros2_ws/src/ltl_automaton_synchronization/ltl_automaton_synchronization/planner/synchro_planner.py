@@ -143,6 +143,7 @@ class sync_LTLPlanner(LTLPlanner):
         
     def confirmation(self, request, Reply):
         # show the layout
+        print(Reply)
         Confirm, time = self.mip(request, Reply)
         if time:
             self.contract_time = time 
@@ -414,12 +415,18 @@ class sync_LTLPlanner(LTLPlanner):
             # Solve
             m.optimize()
             
+            # Check if optimal solution is found
+            if m.status != GRB.OPTIMAL:
+                self.ros_node.get_logger().warning('GUROBI: No solution found!')
+                return None, None
+
+            
             # Send confirmation
             time_list1 = [assign[i][j].x * Reply[agent_list[i]][action_list[j]][0] * Reply[agent_list[i]][action_list[j]][1]
                           for i in range(0, M) for j in range(0, N)]
             time_list2 = [request[action_list[j]] for j in range(0, N)]
             time = max(time_list1 + time_list2)
-            
+            print('before dict')
             Confirm = dict()
             # Create confirmation dictionary
             for i in range(0, M):

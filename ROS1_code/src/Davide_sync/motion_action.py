@@ -63,7 +63,7 @@ class MotActModel2(DiGraph):
 
 
 
-    #IMPORTANTD: other original functions but probably useless
+   
         """
         
     def build_initial(self):

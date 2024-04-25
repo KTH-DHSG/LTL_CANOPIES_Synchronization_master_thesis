@@ -398,7 +398,7 @@ def plot_AA(AA, STEP, local, dep):
     ax.legend(ncol=3, shadow=True)
     pyplot.savefig('action.pdf',bbox_inches='tight')
 
-#IMPORTANTD :added by davide to test
+
 def wait_for_key():
     print("Press any key to continue...")
     old_settings = termios.tcgetattr(sys.stdin)
@@ -466,7 +466,7 @@ CC = list()
 AA = list()
 global_com_bound = 5
 
-# IMPORTANTD: Meng's code start from here
+
 ##################### initial plan synthesis
 for i in xrange(0, N):
     print ('Agent A%s' %(i))

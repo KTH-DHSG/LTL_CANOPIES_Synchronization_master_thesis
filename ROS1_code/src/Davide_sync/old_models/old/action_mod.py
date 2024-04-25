@@ -33,7 +33,7 @@ class ActionModel2(object):
     def __init__(self, action_dict):
         self.action = action_dict
         # add a 'None' action
-        #FIXMED: NO LABEL FOR THE ACTION so not sure this respects meng but may not work
+
         self.action['None'] = {"weight":1, "guard":'1', "label": '', "dependency":{}, "type": 'local'}
     
     # return the allowed actions for a given node label i.e. region of the motion FTS
