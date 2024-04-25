@@ -64,8 +64,6 @@ class ActionModel(object):
         self.action = action_dict['actions']
         self.ts_type = action_dict['type']
         self.initial = action_dict['initial']
-        #TODOD: check where to add initial action
-        #FIXMED: NO LABEL FOR THE ACTION so not sure this respects meng but may not work it did not work 
         
     # return the allowed actions for a given node label i.e. region of the motion FTS
     # works with single labels or sets of labels independently

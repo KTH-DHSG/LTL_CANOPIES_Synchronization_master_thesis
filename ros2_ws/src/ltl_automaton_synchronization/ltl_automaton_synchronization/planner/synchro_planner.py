@@ -23,9 +23,11 @@ class sync_LTLPlanner(LTLPlanner):
         # cooperative actions
         #FIXMED: PROBABLY I CAN REMOVE , *args, **kwargs BUT IT REMAINS TO BE CHECKED
         #TODOD: add self.cooperation_time_end
-        #TODOD: take into account time from the start of previous action
-        #TODOD: add also detour to the count of time
-    def cooperative_action_in_horizon(self, horizon, chose_ROI, *args, **kwargs):
+    def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI, *args, **kwargs):
+        actual_time = self.ros_node.get_clock().now().to_msg()
+        last_action_elapsed_time = round(((actual_time.sec + actual_time.nanosec/1e9)- (prev_received_timestamp.sec + prev_received_timestamp.nanosec/1e9)), 2)
+        #FIXMED: not working correctly check what is happening
+        first_action_flag = True
         k = 0
         j = self.index
         # adapting index in case of detour
@@ -44,7 +46,11 @@ class sync_LTLPlanner(LTLPlanner):
                 if j<len(self.detour):
                     act_key = self.key_given_label(self.detour[j])
                     # add weight of the last non collaborative action
-                    k += self.action_dictionary[act_key]['weight']
+                    if first_action_flag:
+                        k += max(0, self.action_dictionary[act_key]['weight']-last_action_elapsed_time)
+                        first_action_flag = False
+                    else:
+                        k += self.action_dictionary[act_key]['weight']
                     j += 1
                 else:
                     # update index and segment
@@ -69,7 +75,11 @@ class sync_LTLPlanner(LTLPlanner):
                         self.contract_time = k
                         return request
                     # add weight of the last non collaborative action
-                    k += self.action_dictionary[act_key]['weight']
+                    if first_action_flag:
+                        k += max(0, self.action_dictionary[act_key]['weight']-last_action_elapsed_time)
+                        first_action_flag = False
+                    else:
+                        k += self.action_dictionary[act_key]['weight']
                     j += 1
                 # otherwise switch to the suffix plan
                 else:
@@ -78,7 +88,7 @@ class sync_LTLPlanner(LTLPlanner):
             if segment =='loop':
                 # if we do not need to loop back to the beginning of the suffix plan
                 if j<len(self.run.suf_plan):
-                    # get the key of the action #FIXMED: works with label different from the key
+                    # get the key of the action
                     act_key = self.key_given_label(self.run.suf_plan[j])
                     # if the action is collaborative
                     if self.action_dictionary[act_key]['type'] == 'collaborative':
@@ -92,7 +102,11 @@ class sync_LTLPlanner(LTLPlanner):
                         self.contract_time = k
                         return request
                     # add weight of the last non collaborative action
-                    k += self.action_dictionary[act_key]['weight']
+                    if first_action_flag:
+                        k += max(0, self.action_dictionary[act_key]['weight']-last_action_elapsed_time)
+                        first_action_flag = False
+                    else:
+                        k += self.action_dictionary[act_key]['weight']
                     j += 1
                 # if we need to loop back to the beginning of the suffix plan
                 else:
@@ -101,6 +115,7 @@ class sync_LTLPlanner(LTLPlanner):
         return None
     
     def evaluate_request(self, request, alpha=1):
+        #TODOD: take into account also time to finish current action
         reply = dict()
         path = dict()
         for t_ts_node, time in request.items():
@@ -117,10 +132,8 @@ class sync_LTLPlanner(LTLPlanner):
                     f_ts_node = self.run.loop[self.index]
                 
                 # TODOD: add the minimization problem to find the best position to place the detour
-                #FIXMED: there is a problem in shortest path that if we are in a action we execute the action
                 # again because want to go back to the initial state
                 path[t_ts_node], time_ready, detour_time = self.shortest_path_ts(ts, f_ts_node, t_ts_node)
-                # FIXMED: done to do the same thing as Meng's code i would use abs(time_ready-time)
                 reply[t_ts_node] = (True, time_ready)
         # save the path dictionary
         self.path = path.copy()
@@ -155,8 +168,8 @@ class sync_LTLPlanner(LTLPlanner):
         # saving past segment type to know where to start again 
         self.past_segment=self.segment
         self.segment = 'detour'
-        print('Detour path: %s' %self.detour_path)
-        print('Detour: %s' %self.detour)
+        #print('Detour path: %s' %self.detour_path)
+        #print('Detour: %s' %self.detour)
     
     def delay_collaboration(self, time):
         detour_length = round(time/self.action_dictionary['free']['weight'])
@@ -253,10 +266,10 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1
             # i'm in the middle of a detour
             elif self.dindex < len(self.detour)-1:
-                print('error1')
-                print(self.detour_path)
-                print(self.dindex)
-                print(self.detour)              
+                #print('error1')
+                #print(self.detour_path)
+                #print(self.dindex)
+                #print(self.detour)              
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -265,23 +278,23 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1                
             # i'm finishing a detour
             elif self.dindex == len(self.detour)-1:
-                print('error2')
-                print(self.detour_path)
-                print(self.dindex)
-                print(self.detour)
+                #print('error2')
+                #print(self.detour_path)
+                #print(self.dindex)
+                #print(self.detour)
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
                 self.next_move = self.detour[self.dindex]
-                # Increment index counter#TODOD:check if i can remove this 
+                # Increment index counter
                 self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
-                print(self.segment)
+                #print(self.segment)
                 #IMPORTANTD: decide when we consider a detour finished
                 self.contract_time = 0
             # returning the next move
-            print(self.next_move)
+            #print(self.next_move)
             return self.next_move
         else:
             # Use original function

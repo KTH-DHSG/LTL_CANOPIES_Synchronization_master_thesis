@@ -157,7 +157,7 @@ class ProdAut(DiGraph):
                 # print(accept_state, 'finds a cycle')
                 self.graph['accept_with_cycle'].add(accept_state)
     
-    # IMPORTANTD: check if it is used
+    #------------------ NOT USED----------------------
     def accept_predecessors(self, accept_node):
         pre_set = set()
         t_ts_node, t_buchi_node = self.projection(accept_node)
@@ -172,7 +172,7 @@ class ProdAut(DiGraph):
                     self.add_edge(f_prod_node, accept_node, weight=total_weight)
         return pre_set
 
-    # IMPORTANTD: check if it was used because fly_successor not defined in TSModel neither [region] or [status]
+    #------------------ NOT USED----------------------
     def fly_successors(self, f_prod_node):
         f_ts_node, f_buchi_node = self.projection(f_prod_node)
         # been visited before, and hasn't changed 

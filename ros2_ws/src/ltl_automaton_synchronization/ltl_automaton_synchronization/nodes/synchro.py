@@ -54,6 +54,8 @@ class SynchroPlanner(MainPlanner):
         # getting all the agents involved
         self.time_horizon = self.declare_parameter('time_horizon', 10).value 
 
+        # maximum number of agents that are allowd to appear in the mip for each action
+        self.max_agents_action = self.declare_parameter('max_agents_action', 2).value
         
         # initializing request that needs to be processed
         self.current_request = {}
@@ -137,7 +139,7 @@ class SynchroPlanner(MainPlanner):
 
 
     def timer_callback(self):
-        request=self.ltl_planner.cooperative_action_in_horizon(self.time_horizon, self.chose_ROI)
+        request=self.ltl_planner.cooperative_action_in_horizon(self.time_horizon, self.prev_received_timestamp, self.chose_ROI)
         if request:
             self.get_logger().info('Synchro Planner: Sending Collaboration Request')
             #self.current_request = request
@@ -201,14 +203,12 @@ class SynchroPlanner(MainPlanner):
         for result in reply.values():
             if result[0]:
                 self.replies[agent] = reply
-                break
-                
+                break                
         # once all the replies are recieved we can confirm the collaboration
         if self.recieved_replies == len(self.agents):
             # filtering replies to reduce the number of agents involved in the MIP
-            max_agents_action = 1
             t_m = list(self.current_request.values())[0]
-            filtered_replies = self.filter_replies(self.replies, max_agents_action, t_m) 
+            filtered_replies = self.filter_replies(self.replies, t_m) 
             # getting the confirmation
             confirm, time = self.ltl_planner.confirmation(self.current_request, filtered_replies)
             # empty the replies dictionary
@@ -248,7 +248,7 @@ class SynchroPlanner(MainPlanner):
                         break
         return confirm_msg
     
-    def filter_replies(self, replies, max_agents_action, t_m):
+    def filter_replies(self, replies, t_m):
         useful_agents = []
         formatted_replies = {}
         filtered_replies = {}
@@ -263,12 +263,11 @@ class SynchroPlanner(MainPlanner):
         for key, value in formatted_replies.items():
             # sorting in ascending order of time
             value.sort(key=lambda x: x[1])
-            # adding the first max_agents_action that are not already present for that action
+            # adding the first self.max_agents_action that are not already present for that action
             i=0 # counter for the number of agents added for the specific action
             j=0 # counter for the agents in the list
-            while i < max_agents_action and j < len(value):
+            while i < self.max_agents_action and j < len(value):
                 # adding them only once
-                print(i)
                 if value[j][0] not in useful_agents:
                     useful_agents.append(value[j][0])
                     # incrementing number of agents added for the specific action
@@ -278,15 +277,14 @@ class SynchroPlanner(MainPlanner):
         # filtering the replies
         for agent in useful_agents:
             filtered_replies[agent] = replies[agent]
-        
+        # returning the filtered replies
         return filtered_replies
         
 
     
     def confirm_callback(self, msg):
         master, time, confirm = self.unpack_confirm_msg(msg)
-        self.get_logger().info('Synchro Planner: Recieved Confirmation Form Agent: %s' %master)     
-        
+        self.get_logger().info('Synchro Planner: Recieved Confirmation Form Agent: %s' %master) 
         # if no solution exists
         if time == -1.0:
             # I'm the agent who sent the request
@@ -294,13 +292,11 @@ class SynchroPlanner(MainPlanner):
                 self.get_logger().warning('I need to delay collaboration')
                 # we delay the collaboration by a time horizon
                 self.ltl_planner.delay_collaboration(self.time_horizon)
-            
             # I'm an agent who answered the request
             else:
                 self.get_logger().warning('I am not involved')
                 # empty the paths created while processing the request
-                self.ltl_planner.path = {} 
-        
+                self.ltl_planner.path = {}         
         # if a solution exists
         else:
             # I'm the agent who sent the request
@@ -308,18 +304,14 @@ class SynchroPlanner(MainPlanner):
                 self.get_logger().warning('I am the master')
                 # update contract time
                 self.ltl_planner.contract_time = time
-                #add list of helping agents?
-                #TODOD: adapt plan to meet the time if necessary if wait in actions then no need to delaly                             
             elif self.agent_name in confirm:
                 self.get_logger().warning('I need to help')
-                #TODOD: adapt detour to meet the time if necessary and add detour to plan
+                # adapting the plan
                 self.ltl_planner.adapt_plan(confirm[self.agent_name], time)
-                # if wait in actions then no need to delaly
             else:
                 self.get_logger().warning('I am not involved')    
                 # empty the paths created while processing the request
-                self.ltl_planner.path = {} 
-        
+                self.ltl_planner.path = {}         
         # if there are requests in the queue then we process them
         if self.request_queue:
             # get the first request in the queue
@@ -352,9 +344,9 @@ class SynchroPlanner(MainPlanner):
     #-----------------------------------------------------
     def is_next_state_in_plan(self, ts_state):
         # check if the next state is in the detour path
-        print('is_next_state_in_plan')
-        print(self.ltl_planner.segment)
-        print(ts_state)
+        #print('is_next_state_in_plan')
+        #print(self.ltl_planner.segment)
+        #print(ts_state)
         if self.ltl_planner.segment == 'detour':
             if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex]:
                 return True
@@ -382,150 +374,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-
-
-
-
-
-
-
-
-
-
-
-        
-        #print(self.ltl_planner.action_dictionary)
-        #self.ltl_planner.index = 2
-        #request = self.ltl_planner.cooperative_action_in_horizon(30, self.chose_ROI)
-
-        
-        #print('request: %s' % request)
-        #print('run_line: %s' % self.ltl_planner.run.line)
-        #print('run_loop: %s' % self.ltl_planner.run.loop)
-        #print ('run_pre_plan: %s' % self.ltl_planner.run.pre_plan)
-        #print ('run_pre_plan_cost: %s' % self.ltl_planner.run.pre_plan_cost)
-        
-        #self.ltl_planner.index = 0
-        
-        #reply1 = self.ltl_planner.evaluate_request(request)
-        #print('reply: %s' % reply1) 
-        #print('paths: %s' % self.ltl_planner.path)
-
-        #reply2 = reply1.copy()
-        #reply2[('r1','h1')] = (True, 50)
-        #reply2[('r2','a2')] = (True, 20)
-
-        #reply_dict={'/agent1': reply1, '/agent2': reply2, '/agent3': reply1}
-        
-        
-        #confirm, time = self.ltl_planner.confirmation(request, reply_dict)
-        #print('confirm: %s' % confirm)
-        #print('time: %s' % time)
-        #print(self.get_namespace())
-        #print(confirm[self.get_namespace()])
-        
-        
-        #self.ltl_planner.adapt_plan(('r2', 'a2'), time) 
-        #print(self.ltl_planner.detour_path)
-        #print (self.ltl_planner.detour)
-    '''
-        
-        
-        
-        print('request: %s' % request)
-        print('run_line: %s' % self.ltl_planner.run.line)
-        print('run_loop: %s' % self.ltl_planner.run.loop)
-        print ('run_pre_plan: %s' % self.ltl_planner.run.pre_plan)
-        print ('run_pre_plan_cost: %s' % self.ltl_planner.run.pre_plan_cost)
-        j=0
-        k=0
-        while j<len(self.ltl_planner.run.pre_plan_cost)-1:
-            k = k+self.ltl_planner.run.pre_plan_cost[j]
-            print (k)
-            print (j)
-            print('action: %s' % self.ltl_planner.run.pre_plan[j])
-            j += 1
-        print('k: %s' % k)
-        if request: 
-            reply = self.ltl_planner.evaluate_request(request)
-            print('reply: %s' % reply)
-            detour = self.ltl_planner.path[('r2','a2')]
-            print('detour: %s' % detour)
-        states = self.ltl_planner.run.line
-        print('states: %s' % states)
-        #fist_action_state
-        #for i in len(states):
-            
-        #print(self.ltl_planner.product.graph['accept_with_cycle'])
-        #print(self.ltl_planner.product.graph['accept'])
-        #print(self.ltl_planner.product.graph['initial'])
-        
-        next_states= []
-        set_list = list(self.ltl_planner.product.graph['initial'])
-        next_move = self.ltl_planner.next_move
-        curr_node = set_list[0]
-        print (curr_node)
-        targets=[]
-        for node in self.ltl_planner.product.graph['accept']:
-            if node[0]==('r2','a2'):
-                targets.append(node)
-        #print(targets)
-        #result, dist= dijkstra_targets(self.ltl_planner.product, curr_node, targets)
-        #print('yuppy')
-        #print(dist)
-        #for value in result:
-                #print(value)
-        #print('yuppy')
-        #print(next_move)
-        for node in self.ltl_planner.product.successors(curr_node):
-            if (self.ltl_planner.product[curr_node][node]['action'])==next_move:
-                next_states.append(node)        
-        #print(next_states)    
-        curr_node = next_states[-1]
-        next_move= self.ltl_planner.run.pre_plan[1]
-        #print (curr_node) 
-        #print (next_move) 
-        for node in self.ltl_planner.product.successors(curr_node):
-            #print(node)
-            if (self.ltl_planner.product[curr_node][node]['action'])==next_move:
-                next_states.append(node)   
-       # print(next_states)
-        curr_node = next_states[-1]
-        #print (curr_node)
-        #show_automaton(self.robot_model, 'action')
-        #print (self.robot_model.graph['action'].action)
-        #for item in self.ltl_planner.product.edges(data=True):
-            #print(item)
-        #show_automaton(self.ltl_planner.product.graph['buchi'], 'guard_formula')
-        #show_automaton(self.ltl_planner.product, 'action')
-        
-        
-        
-        
-        
-        
-        
-        #for item in self.ltl_planner.product.edges(data=True):
-            #print(item)
-        print(self.ltl_planner.product.graph['initial'])    
-
-        #show_automaton(self.ltl_planner.product, 'action')
-        print(self.ltl_planner.curr_ts_state)
-        print (self.ltl_planner.product.get_possible_states(('r3' , 'free')))
-        self.ltl_planner.update_possible_states(('r3' , 'free'))
-        print(self.ltl_planner.product.possible_states)
-        self.ltl_planner.update_possible_states(('r2' , 'free'))
-        print(self.ltl_planner.product.possible_states)
-        self.ltl_planner.update_possible_states(('r2' , 'l123'))
-        print(self.ltl_planner.product.possible_states)
-        print(self.ltl_planner.product[((('r2', 'free'), 'T0_S9'))][(('r2', 'l123'), 'T0_S9')]['action'])
-        print(self.ltl_planner.product[((('r2', 'free'), 'T0_S9'))][(('r2', 'l123'), 'T1_S7')]['action'])
- 
-        
-        
-        
-        
-        
-        
-    '''  
