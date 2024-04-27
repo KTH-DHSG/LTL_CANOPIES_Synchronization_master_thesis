@@ -12,6 +12,7 @@ from ltl_automaton_msg_srv.msg import SynchroConfirm, SynchroRequest, SynchroRep
 import networkx as nx
 import matplotlib.pyplot as plt
 import yaml
+from random import shuffle
 
 # auxiliary function to show the automaton
 def show_automaton(automaton_graph, edge_label='action'):
@@ -208,7 +209,7 @@ class SynchroPlanner(MainPlanner):
         if self.recieved_replies == len(self.agents):
             # filtering replies to reduce the number of agents involved in the MIP
             t_m = list(self.current_request.values())[0]
-            filtered_replies = self.filter_replies(self.replies, t_m) 
+            filtered_replies = self.filter_repliesMod(self.replies, t_m) 
             # getting the confirmation
             confirm, time = self.ltl_planner.confirmation(self.current_request, filtered_replies)
             # empty the replies dictionary
@@ -279,7 +280,40 @@ class SynchroPlanner(MainPlanner):
             filtered_replies[agent] = replies[agent]
         # returning the filtered replies
         return filtered_replies
-        
+    
+    #TODOD: test the function
+    def filter_repliesMod(self, replies, t_m):
+        useful_agents = []
+        formatted_replies = {}
+        filtered_replies = {}
+        m = 0 # counter for the number of actions
+        for agent, reply in replies.items():
+            for key, value in reply.items():
+                # during the first iteration i create the values as a list
+                if key not in formatted_replies:
+                    formatted_replies[key] = []
+                    m+=1
+                # if an agent can help compute the metrics
+                if value[0]:
+                    formatted_replies[key].append([agent, abs(value[1]-t_m)])
+                # otherwise the value of the metric is infinity
+                else:
+                    formatted_replies[key].append([agent, float('inf')])
+        for key, value in formatted_replies.items():
+            # shuffling the list to guarantee that the agents are selected randomly
+            shuffle(value)
+            # sorting in ascending order of time
+            value.sort(key=lambda x: x[1])
+            # adding the first M agents for the specific action
+            for i in range(m):
+                # adding them only once since i'm using a list
+                if value[i][0] not in useful_agents:
+                    useful_agents.append(value[i][0])
+        # filtering the replies
+        for agent in useful_agents:
+            filtered_replies[agent] = replies[agent]
+        # returning the filtered replies
+        return filtered_replies    
 
     
     def confirm_callback(self, msg):

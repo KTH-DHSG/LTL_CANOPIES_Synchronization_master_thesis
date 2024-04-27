@@ -167,6 +167,7 @@ class sync_LTLPlanner(LTLPlanner):
         self.dindex = 0
         self.contract_time = time
         # saving past segment type to know where to start again 
+        print("adapt plan %s" %self.segment)
         self.past_segment=self.segment
         self.segment = 'detour'
         #print('Detour path: %s' %self.detour_path)
@@ -223,6 +224,7 @@ class sync_LTLPlanner(LTLPlanner):
             self.ros_node.get_logger().warn(str(self.segment))
             self.ros_node.get_logger().warn(str(self.index))
             self.ros_node.get_logger().warn(str(self.dindex))
+            self.ros_node.get_logger().warn(str(self.past_segment))
             # I'm starting a detour 
             if self.dindex == 0:
                 # if index is not the last of the pre_plan...
@@ -253,7 +255,7 @@ class sync_LTLPlanner(LTLPlanner):
                     # saving the segment of the state when we will comback to the original plan
                     self.new_segment = 'loop'
                 # If index is the last element of the suf_plan or equivalently the suf_plan is short....
-                elif (self.segment == 'loop') and ((self.index == len(self.run.suf_plan)-1) or (len(self.run.suf_plan) <= 1)):
+                elif (self.past_segment == 'loop') and ((self.index == len(self.run.suf_plan)-1) or (len(self.run.suf_plan) <= 1)):
                     self.ros_node.get_logger().warn('case3')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
@@ -267,10 +269,10 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1
             # i'm in the middle of a detour
             elif self.dindex < len(self.detour)-1:
-                #print('error1')
-                #print(self.detour_path)
-                #print(self.dindex)
-                #print(self.detour)              
+                print('error1')
+                print(self.detour_path)
+                print(self.dindex)
+                print(self.detour)              
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -279,10 +281,10 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1                
             # i'm finishing a detour
             elif self.dindex == len(self.detour)-1:
-                #print('error2')
-                #print(self.detour_path)
-                #print(self.dindex)
-                #print(self.detour)
+                print('error2')
+                print(self.detour_path)
+                print(self.dindex)
+                print(self.detour)
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -291,11 +293,11 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
-                #print(self.segment)
+                print(self.segment)
                 #IMPORTANTD: decide when we consider a detour finished
                 self.contract_time = 0
             # returning the next move
-            #print(self.next_move)
+            print(self.next_move)
             return self.next_move
         else:
             # Use original function
@@ -441,7 +443,7 @@ class sync_LTLPlanner(LTLPlanner):
             return Confirm, time 
         
         except GurobiError:
-            self.ros_node.get_logger().warning('GUROBI: No solution found!')
+            self.ros_node.get_logger().warning('GUROBI: There was an error!')
             return None, None
 
     
