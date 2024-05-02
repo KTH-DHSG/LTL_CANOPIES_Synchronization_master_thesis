@@ -209,9 +209,15 @@ class SynchroPlanner(MainPlanner):
         if self.recieved_replies == len(self.agents):
             # filtering replies to reduce the number of agents involved in the MIP
             t_m = list(self.current_request.values())[0]
-            filtered_replies = self.filter_repliesMod(self.replies, t_m) 
-            # getting the confirmation
-            confirm, time = self.ltl_planner.confirmation(self.current_request, filtered_replies)
+            m = len(self.current_request)
+            # if a solution exists then we filter the replies and compute the reduced MIP
+            if len(self.replies) >= m:            
+                filtered_replies = self.filter_replies(self.replies, t_m, m) 
+                # getting the confirmation
+                confirm, time = self.ltl_planner.confirmation(self.current_request, filtered_replies)
+            # if no solution exists then we return None
+            else:
+                confirm, time = None, None
             # empty the replies dictionary
             self.replies = {}
             # reset the number of replies recieved
@@ -249,7 +255,7 @@ class SynchroPlanner(MainPlanner):
                         break
         return confirm_msg
     
-    def filter_replies(self, replies, t_m):
+    def filter_replies_ORIGINAL(self, replies, t_m):
         useful_agents = []
         formatted_replies = {}
         filtered_replies = {}
@@ -281,18 +287,15 @@ class SynchroPlanner(MainPlanner):
         # returning the filtered replies
         return filtered_replies
     
-    #TODOD: test the function
-    def filter_repliesMod(self, replies, t_m):
+    def filter_replies(self, replies, t_m, m):
         useful_agents = []
         formatted_replies = {}
         filtered_replies = {}
-        m = 0 # counter for the number of actions
         for agent, reply in replies.items():
             for key, value in reply.items():
                 # during the first iteration i create the values as a list
                 if key not in formatted_replies:
                     formatted_replies[key] = []
-                    m+=1
                 # if an agent can help compute the metrics
                 if value[0]:
                     formatted_replies[key].append([agent, abs(value[1]-t_m)])
@@ -378,9 +381,6 @@ class SynchroPlanner(MainPlanner):
     #-----------------------------------------------------
     def is_next_state_in_plan(self, ts_state):
         # check if the next state is in the detour path
-        #print('is_next_state_in_plan')
-        #print(self.ltl_planner.segment)
-        #print(ts_state)
         if self.ltl_planner.segment == 'detour':
             if ts_state == self.ltl_planner.detour_path[self.ltl_planner.dindex]:
                 return True

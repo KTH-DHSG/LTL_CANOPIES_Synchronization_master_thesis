@@ -177,7 +177,7 @@ class SynchroActions(Node):
         self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
         #send ready to master
         self.synchro_ready_pubs[master].publish(String(data=self.agent))
-        print('published')
+
         # wait until a confirmation is given by the master
         while not self.start_assising_flag:
             pass

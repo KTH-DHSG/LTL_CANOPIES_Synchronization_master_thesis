@@ -22,11 +22,9 @@ class sync_LTLPlanner(LTLPlanner):
         
         # cooperative actions
         #FIXMED: PROBABLY I CAN REMOVE , *args, **kwargs BUT IT REMAINS TO BE CHECKED
-        #TODOD: add self.cooperation_time_end
     def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI, *args, **kwargs):
         actual_time = self.ros_node.get_clock().now().to_msg()
         last_action_elapsed_time = round(((actual_time.sec + actual_time.nanosec/1e9)- (prev_received_timestamp.sec + prev_received_timestamp.nanosec/1e9)), 2)
-        #FIXMED: not working correctly check what is happening
         first_action_flag = True
         k = 0
         j = self.index
@@ -142,9 +140,9 @@ class sync_LTLPlanner(LTLPlanner):
         
         
     def confirmation(self, request, Reply):
-        # show the layout
-        print(Reply)
+        # compute the MIP
         Confirm, time = self.mip(request, Reply)
+        # update contract time
         if time:
             self.contract_time = time 
         return Confirm, time   
@@ -153,8 +151,7 @@ class sync_LTLPlanner(LTLPlanner):
     # if called it add the detour to the plan
     #TODOD: fix the function to adapt the plan 
     def adapt_plan(self, t_ts_node, time):
-        self.ros_node.get_logger().warn('Adapting plan to detour')
-
+        self.ros_node.get_logger().warning('Adapting plan to detour')
         self.detour_path = self.path[t_ts_node]
         # empty the detour list
         self.detour = []
@@ -167,11 +164,8 @@ class sync_LTLPlanner(LTLPlanner):
         self.dindex = 0
         self.contract_time = time
         # saving past segment type to know where to start again 
-        print("adapt plan %s" %self.segment)
         self.past_segment=self.segment
         self.segment = 'detour'
-        #print('Detour path: %s' %self.detour_path)
-        #print('Detour: %s' %self.detour)
     
     def delay_collaboration(self, time):
         detour_length = round(time/self.action_dictionary['free']['weight'])
@@ -220,17 +214,11 @@ class sync_LTLPlanner(LTLPlanner):
     def find_next_move(self):
         # I have a detour to complete
         if self.segment == 'detour':
-            self.ros_node.get_logger().warn('in detour')
-            self.ros_node.get_logger().warn(str(self.segment))
-            self.ros_node.get_logger().warn(str(self.index))
-            self.ros_node.get_logger().warn(str(self.dindex))
-            self.ros_node.get_logger().warn(str(self.past_segment))
             # I'm starting a detour 
             if self.dindex == 0:
                 # if index is not the last of the pre_plan...
                 if self.past_segment == 'line' and self.index < len(self.run.pre_plan)-1:
                     # Add the node that has been visited to trace
-                    self.ros_node.get_logger().warn('case0')
                     self.trace.append(self.run.line[self.index])
                     # Increment index counter
                     self.index += 1
@@ -238,7 +226,6 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'line'
                 # If index is the last of the pre-plan or equivalently if the pre_plan is short...
                 elif (self.past_segment == 'line') and ((self.index == len(self.run.pre_plan)-1) or (len(self.run.pre_plan) <= 1)):
-                    self.ros_node.get_logger().warn('case1')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.line[self.index])
                     # Reset index for the suffix loop
@@ -247,7 +234,6 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'loop'
                 # If index is not the last of the suffix plan or equivalently the suf_plan is short...
                 elif self.past_segment == 'loop' and self.index < len(self.run.suf_plan)-1:
-                    self.ros_node.get_logger().warn('case2')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
                     # Increment the index
@@ -256,7 +242,6 @@ class sync_LTLPlanner(LTLPlanner):
                     self.new_segment = 'loop'
                 # If index is the last element of the suf_plan or equivalently the suf_plan is short....
                 elif (self.past_segment == 'loop') and ((self.index == len(self.run.suf_plan)-1) or (len(self.run.suf_plan) <= 1)):
-                    self.ros_node.get_logger().warn('case3')
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
                     # Resent index 
@@ -268,11 +253,7 @@ class sync_LTLPlanner(LTLPlanner):
                 # Increment index counter
                 self.dindex += 1
             # i'm in the middle of a detour
-            elif self.dindex < len(self.detour)-1:
-                print('error1')
-                print(self.detour_path)
-                print(self.dindex)
-                print(self.detour)              
+            elif self.dindex < len(self.detour)-1:            
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -281,10 +262,6 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1                
             # i'm finishing a detour
             elif self.dindex == len(self.detour)-1:
-                print('error2')
-                print(self.detour_path)
-                print(self.dindex)
-                print(self.detour)
                 # Add the node that has been visited to trace
                 self.trace.append(self.detour_path[self.dindex+1])                
                 # Extract next move from pre_plan
@@ -293,29 +270,15 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
-                print(self.segment)
                 #IMPORTANTD: decide when we consider a detour finished
                 self.contract_time = 0
             # returning the next move
-            print(self.next_move)
             return self.next_move
         else:
             # Use original function
             return super().find_next_move()
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+       
     
     
     #===========================================
@@ -428,7 +391,6 @@ class sync_LTLPlanner(LTLPlanner):
                           for i in range(0, M) for j in range(0, N)]
             time_list2 = [request[action_list[j]] for j in range(0, N)]
             time = max(time_list1 + time_list2)
-            print('before dict')
             Confirm = dict()
             # Create confirmation dictionary
             for i in range(0, M):
