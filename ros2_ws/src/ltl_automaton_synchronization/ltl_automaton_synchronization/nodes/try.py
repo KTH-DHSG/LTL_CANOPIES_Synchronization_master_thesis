@@ -14,7 +14,7 @@ from rclpy.executors import MultiThreadedExecutor
 from ltl_automaton_planner.nodes.planner_node import show_automaton
 from ament_index_python.packages import get_package_prefix
 import yaml
-
+from geometry_msgs.msg import Twist, Vector3, PoseStamped, Point, Quaternion
 import rclpy
 import sys
 
@@ -128,8 +128,10 @@ def main():
     node = rclpy.create_node('test')
     qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)   
     
-    
-    publisher1= node.create_publisher(TransitionSystemStateStamped, 'ts_state', qos_profile)
+    cmd_pub = node.create_publisher(Twist, 'cmd_vel', 10)
+    cmd_pub.publish(Twist(linear=Vector3(x=0.0, y=0.0, z=0.0), angular=Vector3(x=0.0, y=0.0, z=0.0)))
+'''
+        publisher1= node.create_publisher(TransitionSystemStateStamped, 'ts_state', qos_profile)
     subscriber4 = node.create_subscription(String, 'next_move_cmd', lambda msg: print("\n\nnext_move_cmd: "+str(msg)), qos_profile)
     
     TSSS_msg = TransitionSystemStateStamped()
@@ -142,7 +144,9 @@ def main():
     TSSS_msg.ts_state = TSS_msg
     
     publisher1.publish(TSSS_msg)
-    rclpy.spin(node, executor)
+    
+    '''
+    #rclpy.spin(node, executor)
     
 if __name__ == '__main__':
     main()

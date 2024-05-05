@@ -3,7 +3,7 @@ import casadi.tools as ca_tools
 
 import numpy as np
 
-class MPC_Trutlebot():
+class MPC_Turtlebot():
     def __init__(self, x_0, x_t):
         # sampling time [s]
         self.T = 0.1
@@ -11,10 +11,10 @@ class MPC_Trutlebot():
         self.N = 30
         
         # Arena limits
-        self.arena_x_max = 5
-        self.arena_x_min = -5
-        self.arena_y_max = 5
-        self.arena_y_min = -5
+        self.arena_x_max = 2
+        self.arena_x_min = -2
+        self.arena_y_max = 2.5
+        self.arena_y_min = -2.5
         
         # Turtlebot dimention and specifications
         self.rob_diam = 0.2 # [m] #actual max dimension is 0.178
@@ -45,7 +45,7 @@ class MPC_Trutlebot():
         self.v, self.omega = self.controls[...]
         # number of controls #TODOD: REMOVE
         n_controls = self.controls.size
-        
+
         
         ## Unicycle model for the turtlebot
         self.model = ca_tools.struct_SX(self.states)
@@ -138,6 +138,9 @@ class MPC_Trutlebot():
         self.c_p = self.current_parameters(0)
         self.init_control = self.optimizing_target(0)
         
+        # tuning Parameter for the barrier function
+        self.alpha = 1.5
+        
 
     def update_constraints(self, obstacles):
         # empty constrains vector
@@ -158,7 +161,12 @@ class MPC_Trutlebot():
         for i in range(self.N+1):
             for obs in obstacles:
                 self.constr.append(ca.sqrt((self.X[i][0]-obs[0])**2+(self.X[i][1]-obs[1])**2)-(self.rob_diam/2.+obs[2]/2.))
-
+                if i<self.N :
+                    CBF_constr = self.get_CBF(self.X[i], self.U[i], obs)
+                else:
+                    CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0), obs)
+                #self.constr.append(CBF_constr)
+                
         # add contraints bounds
         for _ in range(self.N+1):
             # add constraints for multiple shooting
@@ -173,7 +181,8 @@ class MPC_Trutlebot():
             self.lb_constr.append(0.0)
             self.ub_constr.append(0.0)
             
-            # add constraints for collision avoidance
+        # add constraints for collision avoidance
+        for _ in range(self.N+1):
             for _ in range(len(obstacles)):
                 # zero as lower bound since we don't want the robot to be inside the obstacle
                 self.lb_constr.append(0.0)           
@@ -181,10 +190,21 @@ class MPC_Trutlebot():
                 self.ub_constr.append(np.inf)
         
         # update the nlp problem
-        self.nlp_prob = {'f': self.obj, 'x': self.optimizing_target, 'p':self.current_parameters, 'constr':ca.vertcat(*self.constr)}
+        self.nlp_prob = {'f': self.obj, 'x': self.optimizing_target, 'p':self.current_parameters, 'g':ca.vertcat(*self.constr)}
                     
         # build the new solver
         self.solver = ca.nlpsol('solver', 'ipopt', self.nlp_prob, self.opts_setting)
+    
+    def get_CBF(self, X, U, obs):
+        # define the barrier function
+        h=ca.sqrt((X[0]-obs[0])**2+(X[1]-obs[1])**2)-(self.rob_diam/2.+obs[2]/2.)
+        # calcilating the x_dot
+        x_dot= self.f(X, U)        
+        # bulding the constrint for the barrier function
+        constraint = ca.mtimes(ca.jacobian(h, X), x_dot)+self.alpha*h
+        
+        return constraint
+    
     
     def get_next_control(self):
         # updating the parameters
@@ -209,8 +229,20 @@ class MPC_Trutlebot():
         # return the first control input
         return u_0[:, 0]
 
+'''
+def barrier():
+    x = ca.MX.sym('x', 3, 1)
+    
+    x_dot = x +2
+    h = (x - 2)
+    val = ca.jacobian(h, x) * x_dot + 3*h(x)
+    
+    return ca.Function('barrier', [x], [val], ['x'], ['val'])
 
+'''
 
+    
+    
 
 
     

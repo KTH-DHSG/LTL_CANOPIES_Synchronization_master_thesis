@@ -27,9 +27,9 @@ def shift_movement(T, t0, x0, u_, f):
 if __name__ == '__main__':
     T = 0.1 # sampling time [s]
     N = 30 # prediction horizon
-    rob_diam = 0.3 # [m]
-    v_max = 0.6
-    omega_max = np.pi/4.0
+    rob_diam = 0.2 # [m]
+    v_max = 0.22
+    omega_max = 2.84 # [rad/s]
 
     states = ca_tools.struct_symSX([
         (
@@ -90,18 +90,26 @@ if __name__ == '__main__':
         x_next_ = f(X[i], U[i])*T + X[i]
         g.append(X[i+1] - x_next_)
     #### obstacle definition
-    obs_x = 0.5
-    obs_y = 0.5
+    obs_x = 1
+    obs_y = 1
     obs_x2 = 1.0
     obs_y2 = 1.0
     obs_x3 = 0.25
     obs_y3= 1.25
-    obs_diam = 0.3
+    obs_diam = 0.1
     ##### TODOD: add constraints to obstacle distance
     for i in range(N+1):
         g.append(ca.sqrt((X[i][0]-obs_x)**2+(X[i][1]-obs_y)**2)-(rob_diam/2.+obs_diam/2.))
-        g.append(ca.sqrt((X[i][0]-obs_x2)**2+(X[i][1]-obs_y2)**2)-(rob_diam/2.+obs_diam/2.))
-        g.append(ca.sqrt((X[i][0]-obs_x3)**2+(X[i][1]-obs_y3)**2)-(rob_diam/2.+obs_diam/2.))
+        h=ca.sqrt((X[i][0]-obs_x)**2+(X[i][1]-obs_y)**2)-(rob_diam/2.+obs_diam/2.)  
+        if i<N :
+            x_dot= f(X[i], U[i])
+        else:
+            x_dot= f(X[i], ca.vertcat(0, 0))
+        alpha=1
+        barrier = ca.mtimes(ca.jacobian(h, X[i]), x_dot)+alpha*h
+        print(barrier)
+        #g.append(ca.sqrt((X[i][0]-obs_x2)**2+(X[i][1]-obs_y2)**2)-(rob_diam/2.+obs_diam/2.))
+        #g.append(ca.sqrt((X[i][0]-obs_x3)**2+(X[i][1]-obs_y3)**2)-(rob_diam/2.+obs_diam/2.))
 
 
     nlp_prob = {'f': obj, 'x': optimizing_target, 'p':current_parameters, 'g':ca.vertcat(*g)}
@@ -122,11 +130,11 @@ if __name__ == '__main__':
         ubg.append(0.0)
     for _ in range(N+1):
         lbg.append(0.0)
-        lbg.append(0.0)
-        lbg.append(0.0)
+        #lbg.append(0.0)
+        #lbg.append(0.0)
         ubg.append(np.inf)
-        ubg.append(np.inf)
-        ubg.append(np.inf)
+        #ubg.append(np.inf)
+        #ubg.append(np.inf)
 
     ## add constraints to control and states notice that for the N+1 th state
     for _ in range(N):
@@ -135,24 +143,24 @@ if __name__ == '__main__':
         ubx.append(v_max)
         ubx.append(omega_max)
         lbx.append(-2.0)
-        lbx.append(-2.0)
+        lbx.append(-2.5)
         lbx.append(-np.inf)
         ubx.append(2.0)
-        ubx.append(2.0)
+        ubx.append(2.5)
         ubx.append(np.inf)
     # for the N+1 state
     lbx.append(-2.0)
-    lbx.append(-2.0)
+    lbx.append(-2.5)
     lbx.append(-np.inf)
     ubx.append(2.0)
-    ubx.append(2.0)
+    ubx.append(2.5)
     ubx.append(np.inf)
 
     #IMPORTANTD: Simulation
     t0 = 0.0
     x0 = np.array([0.0, 0.0, 0.0]).reshape(-1, 1)# initial state
     x0_ = x0.copy()
-    xs = np.array([1.5, 1.5, 0.0]).reshape(-1, 1) # final state
+    xs = np.array([1, -1, 0.0]).reshape(-1, 1) # final state
     u0 = np.array([0.0, 0.0]*N).reshape(-1, 2).T# np.ones((N, 2)) # controls
     ff_value = np.array([0.0, 0.0, 0.0]*(N+1)).reshape(-1, 3).T
     x_c = [] # contains for the history of the state
@@ -172,11 +180,21 @@ if __name__ == '__main__':
     while(np.linalg.norm(x0-xs)>1e-2 and mpciter-sim_time/T<0.0 ):
         ## set parameter
         # print('x0 {}'.format(x0))
+        #print(x0)
+        #print(type(x0))
+        #print(x0.shape)
         c_p['P'] = np.concatenate((x0, xs))
+
         init_control['X', lambda x:ca.horzcat(*x)] = ff_value # [:, 0:N+1]
+
+        #print(init_control['X'])
+        #print("X")
         init_control['U', lambda x:ca.horzcat(*x)] = u0 # [:, 0:N]
         t_ = time.time()
         res = solver(x0=init_control, p=c_p, lbg=lbg, lbx=lbx, ubg=ubg, ubx=ubx)
+        #print('g')
+        #print(ubg)
+        #print('g')
         index_t.append(time.time()- t_)
         estimated_opt = res['x'].full() # the feedback is in the series [u0, x0, u1, x1, ...]
         ff_last_ = estimated_opt[-3:]
@@ -189,16 +207,18 @@ if __name__ == '__main__':
         x_c.append(ff_value)
         u_c.append(u0[:, 0])
         t_c.append(t0)
-        t0, x0, u0 = shift_movement(T, t0, x0, u0, f)
-        #print(u0)
-        noise = np.random.normal(0,0.02,1)
+        t0, x01, u0 = shift_movement(T, t0, x0, u0, f)
+        print('u0')
+        print(u0)
+        print('u0')
+        #noise = np.random.normal(0,0.02,1)
         #x0[0] = x0[0] + noise
         #noise = np.random.normal(0,0.02,1)
         #x0[1] = x0[1] + noise
-        x0 = ca.reshape(x0, -1, 1)
+        #x0 = ca.reshape(x0, -1, 1)
         #noise = np.random.normal(0,1,1)
         #print('x0 {}'.format(x0))
-        x0 = x0.full()
+        #x0 = x0.full()
         xx.append(x0)
         mpciter = mpciter + 1
 

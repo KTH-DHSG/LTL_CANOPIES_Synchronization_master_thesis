@@ -2,14 +2,16 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from  rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
-import networkx as nx
 from ltl_automaton_synchronization.transition_systems.ts_definitions import MotionTS, ActionModel, MotActTS
 from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSystemState, LTLPlan, LTLState, LTLStateArray
 from ltl_automaton_msg_srv.srv import FinishCollab
 from std_msgs.msg import String, Header
+from geometry_msgs.msg import Twist, Vector3, PoseStamped, Point, Quaternion
 import yaml
 from ltl_automaton_msg_srv.msg import SynchroConfirm
 
+from ltl_automaton_synchronization.waypoint_chaser.mpc_davide import MPC_Turtlebot
+import numpy as np
 
 
 class SynchroActions(Node):
@@ -30,11 +32,23 @@ class SynchroActions(Node):
             self.motion_dict = motion_action_dictionary['motion']
             self.action_dict = motion_action_dictionary['action']
         
+        # creating obstacles regions dictionary
+        obstacles_dictionary_path = self.declare_parameter('obstacles_dictionary_path', '').value
+        with open(obstacles_dictionary_path, 'r') as file:
+            self.obstacles_regions = yaml.safe_load(file)
+            
         # name of the current agent
         self.agent = self.get_namespace()
         
+        #initial pose of the agent [x, y, theta]
+        self.current_pose = [0, 0, 0] 
+        
         # list of agents names
         self.agents = self.declare_parameter('agents', ['']).value
+        
+        # list of obstacles names to use in conjucntion with mocap in ingludes agents and
+        # other obstacles
+        self.obstacles = self.declare_parameter('obstacles', ['']).value
         
         # agents involved in the collaboration
         self.collaborative_agents = {'master':'', 'assisting_agents':[]}
@@ -97,6 +111,15 @@ class SynchroActions(Node):
         client_cb_group = MutuallyExclusiveCallbackGroup()
         self.finish_collab_srv = self.create_client(FinishCollab, "finished_collab", callback_group=client_cb_group)
 
+        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        
+        # MOCAP subscribers
+        mocap_cb_group = ReentrantCallbackGroup()
+        self.obs_sub={}
+        for obstacle in self.obstacles:
+            self.obs_sub[obstacle] = self.create_subscription(PoseStamped, '/qualisys'+obstacle+'/pose', lambda msg: self.obstacles_cb(msg, obstacle), 10, callback_group=mocap_cb_group)
+        # subscriber fot the pose of the robot
+        self.current_pose = self.create_subscription(PoseStamped, '/qualisys'+self.agent+'/pose', self.update_pose_callback , 10, callback_group=mocap_cb_group)
     
     
     def action_callback(self, msg):
@@ -119,6 +142,7 @@ class SynchroActions(Node):
         if self.action_dict[action_key]['type'] == 'local':
             # local action we just wait for now
             start_time=self.get_clock().now().to_msg().sec
+            self.select_action(action_key, weight, start_time)
             while(self.get_clock().now().to_msg().sec-start_time<weight):
                 pass
         elif self.action_dict[action_key]['type'] == 'collaborative':
@@ -214,12 +238,64 @@ class SynchroActions(Node):
     def synchro_start_callback(self, msg):        
         self.get_logger().info('ACTION NODE: Agent %s is ready to start the collaborative action' %msg.data)
         self.start_assising_flag = True
-    
-    
-    
-    
-    
-    
+    #TODOD: Test in lab
+    def select_action(self, action_key, weight, start_time):
+        if action_key.startswith('goto'):
+            print('moving')
+            region = action_key.split('_')[2]
+            x, y, radius = self.motion_dict['regions'][region]['pose']
+            x_0 =  np.array([0, 0, 0]).reshape(3, 1) #self.current_pose
+            x_t = np.array([x, y, 0]).reshape(3, 1)
+            # MPC object
+            mpc = MPC_Turtlebot(x_0, x_t)
+            # update obstacles
+            #obstacles = self.list_obstacles()
+            obstacles = [[1, 1, 0.1]]
+            # update constraints
+            mpc.update_constraints(obstacles)
+            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
+
+                # mpc iteration
+                control = mpc.get_next_control()
+                # publish control
+                #self.publish_vel_control(control, mpc.x_0)
+                time=self.get_clock().now().to_msg().sec
+                # wait for a sampling time
+                while(self.get_clock().now().to_msg().sec-time<mpc.T):
+                    pass
+                # update obstacles
+                obstacles = self.list_obstacles()
+                # update constraints
+                mpc.update_constraints(obstacles)
+                #update pose
+                #mpc.x_0 = self.current_pose
+        else:
+            while(self.get_clock().now().to_msg().sec-start_time<weight):
+                pass
+
+                
+    def list_obstacles(self):
+        obs = []
+        for obstacle in self.obstacles:
+            obs.append(self.obstacles_regions[obstacle])
+        return obs            
+                
+                
+    def publish_vel_control(self, u, x_0):
+        # linear velocity
+        linear = Vector3()
+        linear.x = np.float64(u[0]*np.cos(x_0[2]))
+        linear.y = np.float64(u[0]*np.sin(x_0[2]))
+        #angular velocity
+        angular = Vector3()
+        angular.z = np.float64(u[1])
+        # Twist message
+        msg = Twist()
+        msg.linear = linear
+        msg.angular = angular
+        # publish the command
+        print(msg)
+        self.cmd_pub.publish(msg)
     
     def key_given_label(self, label):
         for key, value in self.action_dict.items():
@@ -227,9 +303,13 @@ class SynchroActions(Node):
                 return key
         return None
 
-
-
-
+    def obstacles_cb(self, msg, obstacle):
+        # update the region definition for the obstacle
+        self.obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.obstacles_regions[obstacle][2]]
+    
+    
+    def update_pose_callback(self, msg):
+        self.current_pose = np.array([msg.pose.position.x, msg.pose.position.y, np.unwrap([2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)])[0]]).reshape(3, 1)  
 
 
 

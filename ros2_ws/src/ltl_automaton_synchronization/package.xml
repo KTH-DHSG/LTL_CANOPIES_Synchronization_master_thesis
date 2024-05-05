@@ -13,6 +13,7 @@
 
   <depend>rclpy</depend>
   <depend>ltl_automaton_msg_srv</depend>
+  <depend>geometry_msgs</depend>
   <depend>ltl_automaton_planner</depend>
   <exec_depend>ros2launch</exec_depend>
   
