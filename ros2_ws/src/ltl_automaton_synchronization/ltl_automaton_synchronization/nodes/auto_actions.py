@@ -296,11 +296,11 @@ class SynchroActions(Node):
             # linear velocity
             linear = Vector3()
             #linear.x = np.float64(u[0])
-            linear.x = math.floor(u[0]*100)/100
+            linear.x = round(u[0], 2)
             #angular velocity
             angular = Vector3()
             #angular.z = np.float64(u[1])
-            angular.z = math.floor(u[1]*100)/100
+            angular.z = round(u[1], 2)
             # Twist message
             msg = Twist()
             msg.linear = linear
