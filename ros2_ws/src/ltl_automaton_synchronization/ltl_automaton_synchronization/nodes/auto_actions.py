@@ -13,7 +13,7 @@ from ltl_automaton_msg_srv.msg import SynchroConfirm
 from ltl_automaton_synchronization.waypoint_chaser.mpc_turtlebot import MPC_Turtlebot
 from ltl_automaton_synchronization.waypoint_chaser.mpc_rosie import MPC_Rosie
 import numpy as np
-
+import math
 
 class SynchroActions(Node):
     def __init__(self):
@@ -295,10 +295,12 @@ class SynchroActions(Node):
         if self.get_namespace().startswith('/turtlebot'):
             # linear velocity
             linear = Vector3()
-            linear.x = np.float64(u[0])
+            #linear.x = np.float64(u[0])
+            linear.x = math.floor(u[0]*100)/100
             #angular velocity
             angular = Vector3()
-            angular.z = np.float64(u[1])
+            #angular.z = np.float64(u[1])
+            angular.z = math.floor(u[1]*100)/100
             # Twist message
             msg = Twist()
             msg.linear = linear
@@ -313,7 +315,7 @@ class SynchroActions(Node):
             linear.x = np.float64(u[1])
             #angular velocity
             angular = Vector3()
-            angular.z = np.float64(u[0])
+            angular.z = np.float64(u[2])
         # Twist message
         msg = Twist()
         msg.linear = linear
