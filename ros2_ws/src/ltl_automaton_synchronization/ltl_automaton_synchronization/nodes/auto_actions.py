@@ -112,7 +112,7 @@ class SynchroActions(Node):
         client_cb_group = MutuallyExclusiveCallbackGroup()
         self.finish_collab_srv = self.create_client(FinishCollab, "finished_collab", callback_group=client_cb_group)
 
-        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', queuesize=10)
         
         # MOCAP subscribers
         mocap_cb_group = ReentrantCallbackGroup()
