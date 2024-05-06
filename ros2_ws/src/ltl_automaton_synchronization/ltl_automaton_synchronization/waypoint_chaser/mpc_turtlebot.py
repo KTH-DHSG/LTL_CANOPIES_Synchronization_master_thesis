@@ -18,8 +18,8 @@ class MPC_Turtlebot():
         
         # Turtlebot dimention and specifications
         self.rob_diam = 0.2 # [m] #actual max dimension is 0.178
-        self.v_max = 0.21 # [m/s]
-        self.omega_max = 2.82 # [rad/s]
+        self.v_max = 0.1 # [m/s]
+        self.omega_max = 1.5 # [rad/s]
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([

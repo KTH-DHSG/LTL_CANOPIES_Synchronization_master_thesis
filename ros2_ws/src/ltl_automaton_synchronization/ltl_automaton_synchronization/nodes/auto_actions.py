@@ -240,13 +240,11 @@ class SynchroActions(Node):
     #TODOD: Test in lab
     def select_action(self, action_key, weight, start_time):
         if action_key.startswith('goto'):
-            print('moving')
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
             x_0 =  self.current_pose
-            #x_0 = np.array([0, 0, 0]).reshape(3, 1)
-            x_t = np.array([x, y, 0]).reshape(3, 1)
-    
+            #x_0 = np.array([0, 0, np.pi/3]).reshape(3, 1)
+            x_t = np.array([x, y, 0]).reshape(3, 1)    
             # MPC object based on the robot we are using
             if self.get_namespace().startswith('/turtlebot'):
                 mpc = MPC_Turtlebot(x_0, x_t)
@@ -257,23 +255,28 @@ class SynchroActions(Node):
             #obstacles = [[0, 1, 0]]
             # update constraints
             mpc.update_constraints(obstacles)
+            # looping until i'm inside the region but with a smaller radius
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
-                #print('yes1')
                 # mpc iteration
                 control = mpc.get_next_control()
-                #print('no')
                 # publish control
                 self.publish_vel_control(control)
-                time=self.get_clock().now().to_msg().sec
+                #time_msg=self.get_clock().now().to_msg()
+                #time=time_msg.sec+time_msg.nanosec*1e-9
                 # wait for a sampling time
-                while(self.get_clock().now().to_msg().sec-time<mpc.T):
-                    pass
+                #while((self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9)-time<mpc.T/10):
+                    #pass
                 # update obstacles
                 obstacles = self.list_obstacles()
                 # update constraints
                 mpc.update_constraints(obstacles)
                 #update pose
                 mpc.x_0 = self.current_pose
+            # stop the robot at the end
+            if self.get_namespace().startswith('/turtlebot'):
+                self.publish_vel_control([0.0, 0.0])
+            else:
+                self.publish_vel_control([0.0, 0.0, 0.0])   
         else:
             while(self.get_clock().now().to_msg().sec-start_time<weight):
                 pass
@@ -292,11 +295,11 @@ class SynchroActions(Node):
             # linear velocity
             linear = Vector3()
             #linear.x = np.float64(u[0])
-            linear.x = round(u[0], 2)
+            linear.x = u[0]
             #angular velocity
             angular = Vector3()
             #angular.z = np.float64(u[1])
-            angular.z = round(u[1], 2)
+            angular.z = u[1]
             # Twist message
             msg = Twist()
             msg.linear = linear
@@ -305,13 +308,12 @@ class SynchroActions(Node):
         else:
             # linear velocity on x
             linear = Vector3()
-            linear.x = np.float64(u[0])
+            linear.x = u[0]
             # linear velocity on y
-            linear = Vector3()
-            linear.x = np.float64(u[1])
+            linear.y = u[1]
             #angular velocity
             angular = Vector3()
-            angular.z = np.float64(u[2])
+            angular.z = u[2]
         # Twist message
         msg = Twist()
         msg.linear = linear
