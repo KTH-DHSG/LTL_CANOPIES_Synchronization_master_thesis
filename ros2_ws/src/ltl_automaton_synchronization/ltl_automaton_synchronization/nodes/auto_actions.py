@@ -10,7 +10,8 @@ from geometry_msgs.msg import Twist, Vector3, PoseStamped, Point, Quaternion
 import yaml
 from ltl_automaton_msg_srv.msg import SynchroConfirm
 
-from ltl_automaton_synchronization.waypoint_chaser.mpc_davide import MPC_Turtlebot
+from ltl_automaton_synchronization.waypoint_chaser.mpc_turtlebot import MPC_Turtlebot
+from ltl_automaton_synchronization.waypoint_chaser.mpc_rosie import MPC_Rosie
 import numpy as np
 
 
@@ -238,27 +239,35 @@ class SynchroActions(Node):
     def synchro_start_callback(self, msg):        
         self.get_logger().info('ACTION NODE: Agent %s is ready to start the collaborative action' %msg.data)
         self.start_assising_flag = True
+    
     #TODOD: Test in lab
     def select_action(self, action_key, weight, start_time):
         if action_key.startswith('goto'):
             print('moving')
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
-            x_0 =  np.array([0, 0, 0]).reshape(3, 1) #self.current_pose
+            x_0 =  self.current_pose
+            #x_0 = np.array([0, 0, 0]).reshape(3, 1)
             x_t = np.array([x, y, 0]).reshape(3, 1)
-            # MPC object
-            mpc = MPC_Turtlebot(x_0, x_t)
+    
+            # MPC object based on the robot we are using
+            if self.get_namespace().startswith('/turtlebot'):
+                mpc = MPC_Turtlebot(x_0, x_t)
+            else:
+                mpc = MPC_Rosie(x_0, x_t)
             # update obstacles
-            #obstacles = self.list_obstacles()
-            obstacles = [[1, 1, 0.1]]
+            obstacles = self.list_obstacles()
+            #obstacles = [[0, 1, 0]]
             # update constraints
+            print('constr1')
             mpc.update_constraints(obstacles)
+            print('constr')
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
-
+                print('yes')
                 # mpc iteration
                 control = mpc.get_next_control()
                 # publish control
-                #self.publish_vel_control(control, mpc.x_0)
+                self.publish_vel_control(control)
                 time=self.get_clock().now().to_msg().sec
                 # wait for a sampling time
                 while(self.get_clock().now().to_msg().sec-time<mpc.T):
@@ -268,7 +277,7 @@ class SynchroActions(Node):
                 # update constraints
                 mpc.update_constraints(obstacles)
                 #update pose
-                #mpc.x_0 = self.current_pose
+                mpc.x_0 = self.current_pose
         else:
             while(self.get_clock().now().to_msg().sec-start_time<weight):
                 pass
@@ -281,14 +290,30 @@ class SynchroActions(Node):
         return obs            
                 
                 
-    def publish_vel_control(self, u, x_0):
-        # linear velocity
-        linear = Vector3()
-        linear.x = np.float64(u[0]*np.cos(x_0[2]))
-        linear.y = np.float64(u[0]*np.sin(x_0[2]))
-        #angular velocity
-        angular = Vector3()
-        angular.z = np.float64(u[1])
+    def publish_vel_control(self, u):
+        # for turtlebots
+        if self.get_namespace().startswith('/turtlebot'):
+            # linear velocity
+            linear = Vector3()
+            linear.x = np.float64(u[0])
+            #angular velocity
+            angular = Vector3()
+            angular.z = np.float64(u[1])
+            # Twist message
+            msg = Twist()
+            msg.linear = linear
+            msg.angular = angular
+        # for rosies
+        else:
+            # linear velocity on x
+            linear = Vector3()
+            linear.x = np.float64(u[0])
+            # linear velocity on y
+            linear = Vector3()
+            linear.x = np.float64(u[1])
+            #angular velocity
+            angular = Vector3()
+            angular.z = np.float64(u[0])
         # Twist message
         msg = Twist()
         msg.linear = linear

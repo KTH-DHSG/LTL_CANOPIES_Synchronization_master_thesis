@@ -3,7 +3,7 @@ import casadi.tools as ca_tools
 
 import numpy as np
 
-class MPC_Turtlebot():
+class MPC_Rosie():
     def __init__(self, x_0, x_t):
         # sampling time [s]
         self.T = 0.1
@@ -16,9 +16,9 @@ class MPC_Turtlebot():
         self.arena_y_max = 2.5
         self.arena_y_min = -2.5
         
-        # Turtlebot dimention and specifications
-        self.rob_diam = 0.2 # [m] #actual max dimension is 0.178
-        self.v_max = 0.22
+        # Rosie dimention and specifications
+        self.rob_diam = 0.55 # [m] #actual max dimension is 0.178
+        self.v_max = 0.5 
         self.omega_max = 2.84 # [rad/s]
 
         # Casadi variables for states
@@ -37,20 +37,19 @@ class MPC_Turtlebot():
         # Casadi variables for controls
         self.controls  = ca_tools.struct_symSX([
             (
-                ca_tools.entry('v'),
+                ca_tools.entry('v_x'),
+                ca_tools.entry('v_y'),
                 ca_tools.entry('omega')
             )
         ])
         #initialize variables
-        self.v, self.omega = self.controls[...]
-        # number of controls #TODOD: REMOVE
-        n_controls = self.controls.size
+        self.v_x, self.v_y, self.omega = self.controls[...]
 
         
         ## Unicycle model for the turtlebot
         self.model = ca_tools.struct_SX(self.states)
-        self.model['x'] = self.v*ca.cos(self.theta)
-        self.model['y'] = self.v*ca.sin(self.theta)
+        self.model['x'] = self.v_x
+        self.model['y'] = self.v_y
         self.model['theta'] = self.omega
         
         ## Casadi function to return the states
@@ -78,7 +77,7 @@ class MPC_Turtlebot():
         # cost function weights for difference in state
         self.Q = np.array([[1.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, .1]])
         # cost function weights for difference in control
-        self.R = np.array([[0.5, 0.0], [0.0, 0.05]])
+        self.R = np.array([[0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.05]])
              
         # initialize the cost function
         self.obj = 0
@@ -99,7 +98,10 @@ class MPC_Turtlebot():
         self.ub_state  = []
         # add constraints to control and states
         for _ in range(self.N):
-            # linear velocity
+            # linear velocity on x
+            self.lb_state.append(-self.v_max)
+            self.ub_state.append(self.v_max)
+            # linear velocity on y
             self.lb_state.append(-self.v_max)
             self.ub_state.append(self.v_max)
             # angular velocity
@@ -131,7 +133,7 @@ class MPC_Turtlebot():
         # target state
         self.x_t = np.array(x_t).reshape(-1, 1)
         # initial control
-        self.u_0 = np.array([0.0, 0.0]*self.N).reshape(-1, 2).T
+        self.u_0 = np.array([0.0, 0.0, 0.0]*self.N).reshape(-1, 3).T
         # initial feedforward value
         self.ff_value = np.array([0.0, 0.0, 0.0]*(self.N+1)).reshape(-1, 3).T        
         # initial parameters for the solver
@@ -145,7 +147,7 @@ class MPC_Turtlebot():
     def update_constraints(self, obstacles):
         # empty constrains vector
         self.constr = []
-        
+        print('yes')
         # empty lower and upper bounds for constrains
         self.lb_constr  = []
         self.ub_constr  = []
@@ -216,7 +218,7 @@ class MPC_Turtlebot():
         res = self.solver(x0=self.init_control, p=self.c_p, lbg=self.lb_constr, lbx=self.lb_state, ubg=self.ub_constr, ubx=self.ub_state)                   
         # result of the optimization problem is in the series [u0, x0, u1, x1, ...]
         estimated_opt = res['x'].full()
-        temp_estimated = estimated_opt[:-3].reshape(-1, 5) 
+        temp_estimated = estimated_opt[:-3].reshape(-1, 6) #FIXMED:
         # getting all the control inputs
         u_0 = temp_estimated[:, :2].T
         # update the control feedforward value
