@@ -132,10 +132,7 @@ class SynchroActions(Node):
         for state in self.robot_model.successors(self.current_state):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
-                weight = self.robot_model[self.current_state][state]['weight']
-                self.current_state = state                
-                break
-        
+                weight
         # getting action key
         action_key = self.key_given_label(action_label)
         
@@ -259,13 +256,12 @@ class SynchroActions(Node):
             obstacles = self.list_obstacles()
             #obstacles = [[0, 1, 0]]
             # update constraints
-            print('constr1')
             mpc.update_constraints(obstacles)
-            print('constr')
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
-                print('yes')
+                #print('yes1')
                 # mpc iteration
                 control = mpc.get_next_control()
+                #print('no')
                 # publish control
                 self.publish_vel_control(control)
                 time=self.get_clock().now().to_msg().sec

@@ -43,6 +43,7 @@ class MPC_Rosie():
             )
         ])
         #initialize variables
+        print(self.controls)
         self.v_x, self.v_y, self.omega = self.controls[...]
 
         
@@ -147,12 +148,13 @@ class MPC_Rosie():
     def update_constraints(self, obstacles):
         # empty constrains vector
         self.constr = []
-        print('yes')
+
         # empty lower and upper bounds for constrains
         self.lb_constr  = []
         self.ub_constr  = []
         # initial condition constraints for multiple shooting
-        self.constr.append(self.X[0]-self.P[:3]) 
+        self.constr.append(self.X[0]-self.P[:3])
+
         for i in range(self.N):
             # define the cost function
             self.obj = self.obj + ca.mtimes([(self.X[i]-self.P[3:]).T, self.Q, self.X[i]-self.P[3:]]) + ca.mtimes([self.U[i].T, self.R, self.U[i]])
@@ -166,7 +168,7 @@ class MPC_Rosie():
                 if i<self.N :
                     CBF_constr = self.get_CBF(self.X[i], self.U[i], obs)
                 else:
-                    CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0), obs)
+                    CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0, 0), obs)
                 #self.constr.append(CBF_constr)
                 
         # add contraints bounds
@@ -209,11 +211,13 @@ class MPC_Rosie():
     
     
     def get_next_control(self):
+        print('yes2')
         # updating the parameters
         self.c_p['P'] = np.concatenate((self.x_0, self.x_t))
         # updating the initial control
         self.init_control['X', lambda x:ca.horzcat(*x)] = self.ff_value # [:, 0:N+1]
         self.init_control['U', lambda x:ca.horzcat(*x)] = self.u_0
+        print('yes3')
         # solve the optimization problem
         res = self.solver(x0=self.init_control, p=self.c_p, lbg=self.lb_constr, lbx=self.lb_state, ubg=self.ub_constr, ubx=self.ub_state)                   
         # result of the optimization problem is in the series [u0, x0, u1, x1, ...]
@@ -221,13 +225,15 @@ class MPC_Rosie():
         temp_estimated = estimated_opt[:-3].reshape(-1, 6) #FIXMED:
         # getting all the control inputs
         u_0 = temp_estimated[:, :2].T
+        print('u0')
         # update the control feedforward value
         self.u_0 = ca.horzcat(u_0[:, 1:], u_0[:, -1])
-        # update the feedforward value
+        # update the feedforward value        
         ff_value = temp_estimated[:, 2:].T
-        # add the last estimated result now is n_states * (N+1)      
+        # add the last estimated result now is n_states * (N+1)
+        print('u012')      
         self.ff_value = np.concatenate((ff_value, estimated_opt[-3:].reshape(3, 1)), axis=1)   
-
+        print('return')
         # return the first control input
         return u_0[:, 0]
 
