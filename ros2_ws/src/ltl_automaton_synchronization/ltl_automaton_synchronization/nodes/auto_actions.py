@@ -313,7 +313,6 @@ class SynchroActions(Node):
         msg.linear = linear
         msg.angular = angular
         # publish the command
-        print(msg)
         self.cmd_pub.publish(msg)
     
     def key_given_label(self, label):
