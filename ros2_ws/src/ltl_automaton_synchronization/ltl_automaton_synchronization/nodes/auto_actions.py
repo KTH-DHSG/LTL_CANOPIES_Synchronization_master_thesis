@@ -236,8 +236,7 @@ class SynchroActions(Node):
     def synchro_start_callback(self, msg):        
         self.get_logger().info('ACTION NODE: Agent %s is ready to start the collaborative action' %msg.data)
         self.start_assising_flag = True
-    
-    #TODOD: Test in lab
+
     def select_action(self, action_key, weight, start_time):
         if action_key.startswith('goto'):
             region = action_key.split('_')[2]
@@ -261,11 +260,6 @@ class SynchroActions(Node):
                 control = mpc.get_next_control()
                 # publish control
                 self.publish_vel_control(control)
-                #time_msg=self.get_clock().now().to_msg()
-                #time=time_msg.sec+time_msg.nanosec*1e-9
-                # wait for a sampling time
-                #while((self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9)-time<mpc.T/10):
-                    #pass
                 # update obstacles
                 obstacles = self.list_obstacles()
                 # update constraints
@@ -329,12 +323,14 @@ class SynchroActions(Node):
         return None
 
     def obstacles_cb(self, msg, obstacle):
-        # update the region definition for the obstacle
-        self.obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.obstacles_regions[obstacle][2]]
+        # update the region definition for the obstacle if valid        
+        if(not math.isnan(msg.pose.position.x)):
+            self.obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.obstacles_regions[obstacle][2]]
     
     
     def update_pose_callback(self, msg):
-        self.current_pose = np.array([msg.pose.position.x, msg.pose.position.y, np.unwrap([2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)])[0]]).reshape(3, 1)  
+        if(not math.isnan(msg.pose.position.x)):
+            self.current_pose = np.array([msg.pose.position.x, msg.pose.position.y, np.unwrap([2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)])[0]]).reshape(3, 1)  
 
 
 

@@ -5,13 +5,13 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    agents = ['/agent_1', '/turtlebot1', '/turtlebot2', '/rosie1']
+    agents = ['/agent_1', '/turtlebot1', '/turtlebot2', '/rosie0']
     obstacles = ['/obstacle1']
     action_node= Node(
             package='ltl_automaton_synchronization',
             executable='auto_actions',
             name='auto_actions',
-            namespace='rosie1',
+            namespace='rosie0',
             emulate_tty=True,
             output='screen',
             parameters=[
@@ -28,7 +28,7 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='synchro',
             name='ltl_synchro_planner',
-            namespace='rosie1',
+            namespace='rosie0',
             emulate_tty=True,
             output='screen',
             parameters=[

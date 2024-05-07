@@ -6,9 +6,9 @@ import numpy as np
 class MPC_Turtlebot():
     def __init__(self, x_0, x_t):
         # sampling time [s]
-        self.T = 0.1
+        self.T = 1
         # prediction horizon
-        self.N = 30
+        self.N = 10
         
         # Arena limits
         self.arena_x_max = 2
@@ -160,12 +160,11 @@ class MPC_Turtlebot():
         # add constraints to obstacle distance
         for i in range(self.N+1):
             for obs in obstacles:
-                self.constr.append(ca.sqrt((self.X[i][0]-obs[0])**2+(self.X[i][1]-obs[1])**2)-(self.rob_diam/2.+obs[2]/2.))
                 if i<self.N :
                     CBF_constr = self.get_CBF(self.X[i], self.U[i], obs)
                 else:
                     CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0), obs)
-                #self.constr.append(CBF_constr)
+                self.constr.append(CBF_constr)
                 
         # add contraints bounds
         for _ in range(self.N+1):
