@@ -13,8 +13,13 @@ class RRC(Node):
         self.init_params()
         self.setup_pub_sub()
         self.get_logger().info(self.get_namespace() + ' is ready')
-        
-    
+        if self.get_namespace()=='/agent0':
+            time=self.get_clock().now().to_msg().sec
+            while(self.get_clock().now().to_msg().sec-time<self.waiting):
+                if (self.get_clock().now().to_msg().sec-time)%10==0:
+                    self.get_logger().warn('Waiting')
+                pass
+            self.pub_request()
     def init_params(self):
         # number of agents for the simulation
         self.num_agents = self.declare_parameter('num_agents', 1).value
@@ -32,6 +37,8 @@ class RRC(Node):
         # flag to activate filtering
         self.filter = self.declare_parameter('filter', True).value
         
+        #time to wit before starting the request
+        self.waiting= self.declare_parameter('waiting', 10).value
         # initializing request that needs to be processed
         self.current_request = {}
                 
@@ -62,7 +69,6 @@ class RRC(Node):
         
         if self.get_namespace()=='/agent0':
             self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply)
-            self.start_sub = self.create_subscription(String, 'start', self.pub_request, 10)
            
         # creating a confirm publisher
         self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
@@ -71,7 +77,7 @@ class RRC(Node):
         #self.confirm_sub = self.create_subscription(SynchroConfirm, '/synchro_confirm', self.confirm_callback, self.qos_profile)
         
 
-    def pub_request(self, msg):
+    def pub_request(self):
         request = {}
         for i in range(self.num_ass_actions):
             # request entry for each assisitve action at time 10
@@ -175,6 +181,7 @@ class RRC(Node):
             self.end_time = time_msg.sec+time_msg.nanosec*1e-9
             self.get_logger().warn(str(self.end_time))
             self.get_logger().warn(str(self.end_time-self.start_time))
+            self.get_logger().info(str(confirm_msg))
             self.confirm_pub.publish(confirm_msg)    
     
     def unpack_reply_msg(self, msg):
