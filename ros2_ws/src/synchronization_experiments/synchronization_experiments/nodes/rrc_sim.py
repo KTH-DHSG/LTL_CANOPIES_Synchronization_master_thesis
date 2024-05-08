@@ -122,7 +122,7 @@ class RRC(Node):
                 reply[t_ts_node] = (b_d, uniform(5, 15))
             else:
                 reply[t_ts_node] = (b_d, 0)
-        waste_time=uniform(0, 5)      
+        waste_time=uniform(0, 6)      
         time=self.get_clock().now().to_msg()
         time=time.sec+time.nanosec*1e-9
         updated_time=self.get_clock().now().to_msg()
