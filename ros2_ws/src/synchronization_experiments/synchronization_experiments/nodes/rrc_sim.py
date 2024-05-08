@@ -15,9 +15,14 @@ class RRC(Node):
         self.get_logger().info(self.get_namespace() + ' is ready')
         if self.get_namespace()=='/agent0':
             time=self.get_clock().now().to_msg().sec
+            flag=True
             while(self.get_clock().now().to_msg().sec-time<self.waiting):
                 if (self.get_clock().now().to_msg().sec-time)%10==0:
-                    self.get_logger().warn('Waiting')
+                    if flag:
+                        self.get_logger().warn('Waiting')
+                        flag=False
+                else:
+                    flag=True                    
                 pass
             self.pub_request()
     def init_params(self):
@@ -50,10 +55,12 @@ class RRC(Node):
         
         #start and ending time for RRC cycle
         self.start_time = 0
+        self.mid_time = 0
         self.end_time = 0 
+        self.agents_involved = 0
     
     def setup_pub_sub(self):
-        
+        len(self.agents)
         self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
        
         self.qos_profile_reply = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
@@ -68,7 +75,8 @@ class RRC(Node):
         self.reply_publisher = self.create_publisher(SynchroReply, '/agent0/synchro_reply', self.qos_profile)
         
         if self.get_namespace()=='/agent0':
-            self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply)
+            cb_group = rclpy.callback_groups.ReentrantCallbackGroup()
+            self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply, callback_group=cb_group)
            
         # creating a confirm publisher
         self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
@@ -85,9 +93,7 @@ class RRC(Node):
         self.get_logger().info('Synchro Planner: Sending Collaboration Request')
         request_msg = self.build_request_msg(request)
         time_msg = self.get_clock().now().to_msg()
-        self.start_time = time_msg.sec+time_msg.nanosec*1e-9
-        self.get_logger().warn(str(self.start_time))
-        
+        self.start_time = time_msg.sec+time_msg.nanosec*1e-9        
         self.request_pub.publish(request_msg)
 
     
@@ -116,7 +122,14 @@ class RRC(Node):
                 reply[t_ts_node] = (b_d, uniform(5, 15))
             else:
                 reply[t_ts_node] = (b_d, 0)
-                       
+        waste_time=uniform(0, 5)      
+        time=self.get_clock().now().to_msg()
+        time=time.sec+time.nanosec*1e-9
+        updated_time=self.get_clock().now().to_msg()
+        updated_time=updated_time.sec+updated_time.nanosec*1e-9
+        while(self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec-time<waste_time):          
+            updated_time=self.get_clock().now().to_msg()
+            updated_time=updated_time.sec+updated_time.nanosec*1e-9
         reply_msg = self.build_reply_msg(reply)
         self.reply_publisher.publish(reply_msg)
 
@@ -147,6 +160,7 @@ class RRC(Node):
         agent, reply = self.unpack_reply_msg(msg)    
         # updating the number of replies recievd
         self.recieved_replies += 1
+        print(self.recieved_replies)
         # if the agent can provide any help then we store the reply
         # this reduces the MIP computation time
         if self.filter:
@@ -158,6 +172,7 @@ class RRC(Node):
             self.replies[agent] = reply
         # once all the replies are recieved we can confirm the collaboration
         if self.recieved_replies == len(self.agents):
+            self.mid_time = self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9
             # filtering replies to reduce the number of agents involved in the MIP
             t_m = list(self.current_request.values())[0]
             m = len(self.current_request)
@@ -168,6 +183,7 @@ class RRC(Node):
                 else:
                     filtered_replies = self.replies
                 # getting the confirmation
+                self.agents_involved = len(filtered_replies)
                 confirm, time = self.mip(self.current_request, filtered_replies)
             # if no solution exists then we return None
             else:
@@ -179,8 +195,9 @@ class RRC(Node):
             confirm_msg = self.build_confirm_msg(confirm, time)
             time_msg = self.get_clock().now().to_msg()
             self.end_time = time_msg.sec+time_msg.nanosec*1e-9
-            self.get_logger().warn(str(self.end_time))
-            self.get_logger().warn(str(self.end_time-self.start_time))
+            self.get_logger().warn("Agents in the MIP: "+str(self.agents_involved))
+            self.get_logger().warn("RRC time: "+str(self.end_time-self.start_time))
+            self.get_logger().warn("Filter and MIP time: "+str(self.end_time-self.mid_time))
             self.get_logger().info(str(confirm_msg))
             self.confirm_pub.publish(confirm_msg)    
     

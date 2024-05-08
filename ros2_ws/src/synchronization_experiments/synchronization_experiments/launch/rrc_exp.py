@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     nodes = [] 
-    num_agents = 300
+    num_agents = 200
     num_ass_actions = 4
     filter = False   
     for i in range(num_agents):
@@ -21,7 +21,7 @@ def generate_launch_description():
                 {'num_agents': num_agents},
                 {'num_ass_actions': num_ass_actions},
                 {'filter': filter},
-                {'waiting': 120}
+                {'waiting': 20}
                 
             ]
         )
