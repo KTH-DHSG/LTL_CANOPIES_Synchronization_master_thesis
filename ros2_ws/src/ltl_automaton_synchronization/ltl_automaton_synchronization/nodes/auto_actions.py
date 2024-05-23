@@ -132,16 +132,16 @@ class SynchroActions(Node):
         for state in self.robot_model.successors(self.current_state):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
-                weight
+                weight = self.robot_model[self.current_state][state]['weight']
         # getting action key
         action_key = self.key_given_label(action_label)
         
         # check the type of action 
         if self.action_dict[action_key]['type'] == 'local':
             # local action we just wait for now
-            start_time=self.get_clock().now().to_msg().sec
+            start_time=self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9
             self.select_action(action_key, weight, start_time)
-            while(self.get_clock().now().to_msg().sec-start_time<weight):
+            while(self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9-start_time<weight):
                 pass
         elif self.action_dict[action_key]['type'] == 'collaborative':
             # collaborative action start master protocol

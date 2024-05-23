@@ -1,0 +1,124 @@
+motion:
+  initial: h
+  type: MotionTS
+  regions:
+    h:
+      label: h
+      pose:
+      - 0
+      - 0
+      - 0.7
+      weights:
+      - 0.0
+      - 4.43846820423443
+      - 2.9832867780352594
+      - 3.0364452901377956
+      - 3.178049716414141
+      - 4.254409477236529
+    d:
+      label: d
+      pose:
+      - 0.55
+      - -2.15
+      - 0.45
+      weights:
+      - 4.43846820423443
+      - 0.0
+      - 7.421590126111789
+      - 5.502726596879042
+      - 5.531726674375732
+      - 5.635601121442148
+    m1:
+      label: m1
+      pose:
+      - -0.35
+      - 1.45
+      - 0.45
+      weights:
+      - 2.9832867780352594
+      - 7.421590126111789
+      - 0.0
+      - 4.1182520563948
+      - 4.326661530556787
+      - 5.60357029044876
+    m2:
+      label: m2
+      pose:
+      - 1.45
+      - 0.45
+      - 0.45
+      weights:
+      - 3.0364452901377956
+      - 5.502726596879042
+      - 4.1182520563948
+      - 0.0
+      - 6.20966987850401
+      - 7.280109889280518
+    m3:
+      label: m3
+      pose:
+      - -1.55
+      - -0.35
+      - 0.45
+      weights:
+      - 3.178049716414141
+      - 5.531726674375732
+      - 4.326661530556787
+      - 6.20966987850401
+      - 0.0
+      - 1.2806248474865696
+    m4:
+      label: m4
+      pose:
+      - -1.95
+      - -0.85
+      - 0.45
+      weights:
+      - 4.254409477236529
+      - 5.635601121442148
+      - 5.60357029044876
+      - 7.280109889280518
+      - 1.2806248474865696
+      - 0.0
+action:
+  type: ActionModel
+  initial: free
+  actions:
+    load:
+      weight: 20
+      guard: h
+      label: load
+      dependency:
+        h_load:
+        - h
+      type: collaborative
+    h_load:
+      weight: 20
+      guard: h
+      label: h_load
+      dependency: {}
+      type: assisting
+    manipulate:
+      weight: 15
+      guard: m1 || m2 || m3 || m4
+      label: manipluate
+      dependency: {}
+      type: local
+    deliver:
+      weight: 30
+      guard: d
+      label: deliver
+      dependency: {}
+      type: local
+    harvest:
+      weight: 40
+      guard: h
+      label: harvest
+      dependency: {}
+      type: local
+    free:
+      weight: 1
+      guard: '1'
+      label: none
+      dependency: {}
+      type: local

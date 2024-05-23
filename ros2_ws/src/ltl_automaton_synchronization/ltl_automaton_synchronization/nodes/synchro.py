@@ -80,10 +80,10 @@ class SynchroPlanner(MainPlanner):
         # motion and actions
         motion_ts = MotionTS(self.motion_dict)
         action_mod = ActionModel(self.action_dict)
-     
+        
         # Here we take the product of each element of state_models to define the full TS
         self.robot_model = MotActTS(motion_ts, action_mod)
-        
+
         # initialize the planner
         self.ltl_planner = sync_LTLPlanner(self, self.robot_model, self.hard_task, self.soft_task, self.initial_beta, self.gamma)
         self.ltl_planner.optimal()
