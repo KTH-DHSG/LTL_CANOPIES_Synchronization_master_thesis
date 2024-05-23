@@ -31,6 +31,15 @@ def output_standard(file_name, robot_type):
         def dist(point1, point2):
             return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)/ROBOT_SPEED
         # ROI = (x, y, radius)
+        ''' LAB MEASUREMENTS
+        H = [0, 0, 0.7]
+        D = [0.55, -2.15, 0.45]
+        M1 = [-0.35, 1.45, 0.45]
+        M2 = [1.45, 0.45, 0.45]
+     '   M3 = [-1.55, -0.35, 0.45]
+        M4 = [-1.95, -0.85, 0.45]     
+        '''
+        
         H = [0, 0, 0.7]
         D = [0.55, -2.15, 0.45]
         M1 = [-0.35, 1.45, 0.45]
@@ -76,6 +85,18 @@ def output_standard(file_name, robot_type):
             return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)/ROBOT_SPEED
         
        # ROI = (x, y, radius)
+       
+        ''' LAB MEASUREMENTS
+        P1 = [-1.55, 1.05, 0.3]
+        P2 = [0.85, 1.45, 0.3]
+        P3 = [-0.15, -2.65, 0.3]
+        P4 = [1.35, -1.95, 0.3]
+        C1 = [-2.05, 1.95, 0.3]
+        C2 = [1.75, 1.95, 0.3]
+        C3 = [-2.05, -2.65, 0.3]
+        C4 = [7.75, -2.6, 0,3]
+       '''
+       
         P1 = [-1.55, 1.05, 0.3]
         P2 = [0.85, 1.45, 0.3]
         P3 = [-0.15, -2.65, 0.3]
