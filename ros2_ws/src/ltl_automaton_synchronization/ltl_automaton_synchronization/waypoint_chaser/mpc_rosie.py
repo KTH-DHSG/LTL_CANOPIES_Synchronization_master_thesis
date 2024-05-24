@@ -17,7 +17,7 @@ class MPC_Rosie():
         self.arena_y_min = -2.5
         
         # Rosie dimention and specifications
-        self.rob_diam = 0.55 # [m] #actual max dimension is 0.178
+        self.rob_diam = 0.55 # [m] 
         self.v_max = 0.5 
         self.omega_max = 2.84 # [rad/s]
 
@@ -46,10 +46,10 @@ class MPC_Rosie():
         self.v_x, self.v_y, self.omega = self.controls[...]
 
         
-        ## Unicycle model for the turtlebot
+        # omnidirectional model for the rosie
         self.model = ca_tools.struct_SX(self.states)
-        self.model['x'] = self.v_x
-        self.model['y'] = self.v_y
+        self.model['x'] = self.v_x*ca.cos(self.theta)-self.v_y*ca.sin(self.theta)
+        self.model['y'] = self.v_x*ca.sin(self.theta)+self.v_y*ca.cos(self.theta)
         self.model['theta'] = self.omega
         
         ## Casadi function to return the states
@@ -199,7 +199,7 @@ class MPC_Rosie():
     
     def get_CBF(self, X, U, obs):
         # define the barrier function
-        h=ca.sqrt((X[0]-obs[0])**2+(X[1]-obs[1])**2)-(self.rob_diam/2.+obs[2]/2.)
+        h=ca.sqrt((X[0]-obs[0])**2+(X[1]-obs[1])**2)-(self.rob_diam/2.+obs[2])
         # calcilating the x_dot
         x_dot= self.f(X, U)        
         # bulding the constrint for the barrier function

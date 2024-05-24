@@ -78,7 +78,7 @@ class DataCollector(Node):
                       
     
     def setup_pub_sub(self):
-        self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        self.qos_profile = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
         
         cb_group = rclpy.callback_groups.ReentrantCallbackGroup()
 

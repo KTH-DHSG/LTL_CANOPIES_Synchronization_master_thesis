@@ -35,8 +35,18 @@ class SynchroActions(Node):
         
         # creating obstacles regions dictionary
         obstacles_dictionary_path = self.declare_parameter('obstacles_dictionary_path', '').value
+        
+        self.dynamic_obstacles_regions={}
+        self.static_obstacles_regions={}
         with open(obstacles_dictionary_path, 'r') as file:
-            self.obstacles_regions = yaml.safe_load(file)
+            #FIXMED: DYNAMIC AND STACIC OBSTACLES
+            obstacles_regions = yaml.safe_load(file)
+            for (obstacle, region) in obstacles_regions.items():
+                # we conside dynamic only the one starting with / since they are the one measured by the mocap
+                if obstacle.startswith('/'):
+                    self.dynamic_obstacles_regions[obstacle] = region
+                else:
+                    self.static_obstacles_regions[obstacle] = (region)
             
         # name of the current agent
         self.agent = self.get_namespace()
@@ -49,7 +59,7 @@ class SynchroActions(Node):
         
         # list of obstacles names to use in conjucntion with mocap in ingludes agents and
         # other obstacles
-        self.obstacles = self.declare_parameter('obstacles', ['']).value
+        self.dynamic_obstacles = self.declare_parameter('dynamic_obstacles', ['']).value
         
         # agents involved in the collaboration
         self.collaborative_agents = {'master':'', 'assisting_agents':[]}
@@ -58,7 +68,7 @@ class SynchroActions(Node):
         # flag to indicate I can start the assisitve action
         self.start_assising_flag = False
         
-    
+        self.is_simulation = self.declare_parameter('is_simulation', True).value
     
     def build_automaton(self):
         
@@ -117,7 +127,7 @@ class SynchroActions(Node):
         # MOCAP subscribers
         mocap_cb_group = ReentrantCallbackGroup()
         self.obs_sub={}
-        for obstacle in self.obstacles:
+        for obstacle in self.dynamic_obstacles:
             self.obs_sub[obstacle] = self.create_subscription(PoseStamped, '/qualisys'+obstacle+'/pose', lambda msg: self.obstacles_cb(msg, obstacle), 10, callback_group=mocap_cb_group)
         # subscriber fot the pose of the robot
         self.current_pose = self.create_subscription(PoseStamped, '/qualisys'+self.agent+'/pose', self.update_pose_callback , 10, callback_group=mocap_cb_group)
@@ -138,11 +148,8 @@ class SynchroActions(Node):
         
         # check the type of action 
         if self.action_dict[action_key]['type'] == 'local':
-            # local action we just wait for now
-            start_time=self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9
-            self.select_action(action_key, weight, start_time)
-            while(self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9-start_time<weight):
-                pass
+            #select the action that needs to be executed
+            self.select_action(action_key, weight)
         elif self.action_dict[action_key]['type'] == 'collaborative':
             # collaborative action start master protocol
             self.start_collaboration(self.collaborative_agents['assisting_agents'], weight)
@@ -168,7 +175,7 @@ class SynchroActions(Node):
         # confirming the action has been completed and publishing new state
         self.get_logger().info('ACTION NODE: Publishing State: %s. After Action: %s' %(str(next_state), msg.data))
         self.state_pub.publish(next_state_msg)
-        
+        #FIXMED: collaboration ends when detour finished
         #IMPORTANTD: decide when we consider a detour finished
         if self.action_dict[action_key]['type'] != 'local':
             # Call service to update planner after collaboration
@@ -237,8 +244,9 @@ class SynchroActions(Node):
         self.get_logger().info('ACTION NODE: Agent %s is ready to start the collaborative action' %msg.data)
         self.start_assising_flag = True
 
-    def select_action(self, action_key, weight, start_time):
-        if action_key.startswith('goto'):
+    def select_action(self, action_key, weight):
+        #check if we are not in a simulation
+        if not self.is_simulation and action_key.startswith('goto'):
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
             x_0 =  self.current_pose
@@ -272,14 +280,14 @@ class SynchroActions(Node):
             else:
                 self.publish_vel_control([0.0, 0.0, 0.0])   
         else:
+            start_time=self.get_clock().now().to_msg().sec
             while(self.get_clock().now().to_msg().sec-start_time<weight):
                 pass
 
                 
     def list_obstacles(self):
-        obs = []
-        for obstacle in self.obstacles:
-            obs.append(self.obstacles_regions[obstacle])
+        obs = self.static_obstacles_regions.values()
+        obs.append(self.dynamic_obstacles_regions.values())
         return obs            
                 
                 
@@ -324,7 +332,7 @@ class SynchroActions(Node):
     def obstacles_cb(self, msg, obstacle):
         # update the region definition for the obstacle if valid        
         if(not math.isnan(msg.pose.position.x)):
-            self.obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.obstacles_regions[obstacle][2]]
+            self.dynamic_obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.dynamic_obstacles_regions[obstacle][2]]
     
     
     def update_pose_callback(self, msg):
