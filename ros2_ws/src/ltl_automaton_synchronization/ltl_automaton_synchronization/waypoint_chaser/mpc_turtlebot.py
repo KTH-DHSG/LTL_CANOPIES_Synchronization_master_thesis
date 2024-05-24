@@ -159,6 +159,7 @@ class MPC_Turtlebot():
         # add constraints to obstacle distance
         for i in range(self.N+1):
             for obs in obstacles:
+                print("obs", obs)
                 if i<self.N :
                     CBF_constr = self.get_CBF(self.X[i], self.U[i], obs)
                 else:
