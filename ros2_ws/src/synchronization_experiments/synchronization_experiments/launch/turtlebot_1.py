@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     agents = ['/turtlebot1', '/turtlebot2']
-    dynamic_obstacles = ['/turtlebot2']
+    dynamic_obstacles = ['/rosie0']
     action_node= Node(
             package='ltl_automaton_synchronization',
             executable='auto_actions',
