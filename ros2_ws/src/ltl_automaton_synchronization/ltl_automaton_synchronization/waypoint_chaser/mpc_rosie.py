@@ -10,16 +10,16 @@ class MPC_Rosie():
         # prediction horizon
         self.N = 10
         
-        # Arena limits
-        self.arena_x_max = 2
-        self.arena_x_min = -2
-        self.arena_y_max = 2.5
-        self.arena_y_min = -2.5
-        
         # Rosie dimention and specifications
         self.rob_diam = 0.55 # [m] 
         self.v_max = 0.5 
         self.omega_max = 2.84 # [rad/s]
+        
+        # Arena limits 
+        self.arena_x_max = 1.877 - self.rob_diam/2.
+        self.arena_x_min = -2.290 - self.rob_diam/2.
+        self.arena_y_max = 2.300 - self.rob_diam/2.
+        self.arena_y_min = -2.869 - self.rob_diam/2.
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([

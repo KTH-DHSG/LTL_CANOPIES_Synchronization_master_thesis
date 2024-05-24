@@ -2,7 +2,6 @@ import yaml
 import os
 from ament_index_python.packages import get_package_prefix
 import math
-#TODOD: if there is time create a file that asks the user to input and create the dictionary
 # auxilliary functions
 # write_to_file(file_name, dict) writes the dictionary to a yaml file
 
@@ -37,7 +36,7 @@ def output_standard(file_name, robot_type, mesurement_type):
             M1 = [-0.306, 1.526, 0.43]
             M2 = [1.376, 0.432, 0.43]
             M3 = [-1.495, -0.336, 0.43]
-            M4 = [-1.95, -0.85, 0.43]     #TODOD: change this to the correct value
+            M4 = [-0.859, -1.880, 0.43]
         elif mesurement_type=='nominal':        
             H = [0, 0, 0.7]
             D = [0.55, -2.15, 0.45]
@@ -120,7 +119,7 @@ def output_standard(file_name, robot_type, mesurement_type):
                  [dist(C4,P1), dist(C4,P2), dist(C4,P3), dist(C4,P4), dist(C4,C1), dist(C4,C2), dist(C4,C3), dist(C4,C4)]
                 ]
         region_dict = {
-            'initial': 'h',
+            'initial': 'p1',
             'type': 'MotionTS',
             'regions':{
                 'p1' : {'label':'p1', 'pose': P1, 'weights':weights[0]},

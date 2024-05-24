@@ -55,8 +55,6 @@ class SynchroPlanner(MainPlanner):
         # getting all the agents involved
         self.time_horizon = self.declare_parameter('time_horizon', 10).value 
 
-        # maximum number of agents that are allowd to appear in the mip for each action
-        self.max_agents_action = self.declare_parameter('max_agents_action', 2).value
         
         # initializing request that needs to be processed
         self.current_request = {}
@@ -254,38 +252,6 @@ class SynchroPlanner(MainPlanner):
                         confirm_msg.agents.append(agent)
                         break
         return confirm_msg
-    
-    def filter_replies_ORIGINAL(self, replies, t_m):
-        useful_agents = []
-        formatted_replies = {}
-        filtered_replies = {}
-        for agent, reply in replies.items():
-            for key, value in reply.items():
-                # during the first iteration i create the values as a list
-                if key not in formatted_replies:
-                    formatted_replies[key] = []
-                # consider only agents who can actually help with the specific action
-                if value[0]:
-                    formatted_replies[key].append((agent, abs(value[1]-t_m)))
-        for key, value in formatted_replies.items():
-            # sorting in ascending order of time
-            value.sort(key=lambda x: x[1])
-            # adding the first self.max_agents_action that are not already present for that action
-            i=0 # counter for the number of agents added for the specific action
-            j=0 # counter for the agents in the list
-            while i < self.max_agents_action and j < len(value):
-                # adding them only once
-                if value[j][0] not in useful_agents:
-                    useful_agents.append(value[j][0])
-                    # incrementing number of agents added for the specific action
-                    i+=1
-                # incrementing number of agents seen in the list
-                j+=1
-        # filtering the replies
-        for agent in useful_agents:
-            filtered_replies[agent] = replies[agent]
-        # returning the filtered replies
-        return filtered_replies
     
     def filter_replies(self, replies, t_m, m):
         useful_agents = []

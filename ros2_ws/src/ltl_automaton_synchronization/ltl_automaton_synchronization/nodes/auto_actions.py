@@ -39,7 +39,6 @@ class SynchroActions(Node):
         self.dynamic_obstacles_regions={}
         self.static_obstacles_regions={}
         with open(obstacles_dictionary_path, 'r') as file:
-            #FIXMED: DYNAMIC AND STACIC OBSTACLES
             obstacles_regions = yaml.safe_load(file)
             for (obstacle, region) in obstacles_regions.items():
                 # we conside dynamic only the one starting with / since they are the one measured by the mocap
@@ -57,7 +56,7 @@ class SynchroActions(Node):
         # list of agents names
         self.agents = self.declare_parameter('agents', ['']).value
         
-        # list of obstacles names to use in conjucntion with mocap in ingludes agents and
+        # list of obstacles names to use in conjucntion with mocap in includes agents and
         # other obstacles
         self.dynamic_obstacles = self.declare_parameter('dynamic_obstacles', ['']).value
         
@@ -67,7 +66,7 @@ class SynchroActions(Node):
         self.agents_ready = 0
         # flag to indicate I can start the assisitve action
         self.start_assising_flag = False
-        
+        # flag to understand if we are in a simulation or in areal experiment
         self.is_simulation = self.declare_parameter('is_simulation', True).value
     
     def build_automaton(self):
@@ -145,7 +144,6 @@ class SynchroActions(Node):
                 weight = self.robot_model[self.current_state][state]['weight']
         # getting action key
         action_key = self.key_given_label(action_label)
-        
         # check the type of action 
         if self.action_dict[action_key]['type'] == 'local':
             #select the action that needs to be executed
@@ -175,9 +173,10 @@ class SynchroActions(Node):
         # confirming the action has been completed and publishing new state
         self.get_logger().info('ACTION NODE: Publishing State: %s. After Action: %s' %(str(next_state), msg.data))
         self.state_pub.publish(next_state_msg)
-        #FIXMED: collaboration ends when detour finished
-        #IMPORTANTD: decide when we consider a detour finished
-        if self.action_dict[action_key]['type'] != 'local':
+        
+        # updating the planner saying the collaborative action has ended (needed only for the master)
+        # slave agents finish a collaboration at the end of the detour
+        if self.action_dict[action_key]['type'] != 'collaborative':            
             # Call service to update planner after collaboration
             self.finish_collab_srv.wait_for_service()
             self.finish_collab_srv.call(FinishCollab.Request())

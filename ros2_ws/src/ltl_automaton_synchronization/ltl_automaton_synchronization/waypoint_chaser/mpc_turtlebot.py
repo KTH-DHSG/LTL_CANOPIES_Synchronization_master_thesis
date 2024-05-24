@@ -9,17 +9,17 @@ class MPC_Turtlebot():
         self.T = 1
         # prediction horizon
         self.N = 10
-        
-        # Arena limits
-        self.arena_x_max = 2
-        self.arena_x_min = -2
-        self.arena_y_max = 2.5
-        self.arena_y_min = -2.5
-        
+
         # Turtlebot dimention and specifications
         self.rob_diam = 0.2 # [m] #actual max dimension is 0.178
         self.v_max = 0.1 # [m/s]
         self.omega_max = 1.5 # [rad/s]
+        
+        # Arena limits 
+        self.arena_x_max = 1.877 - self.rob_diam/2.
+        self.arena_x_min = -2.290 - self.rob_diam/2.
+        self.arena_y_max = 2.300 - self.rob_diam/2.
+        self.arena_y_min = -2.869 - self.rob_diam/2.
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([
@@ -43,8 +43,7 @@ class MPC_Turtlebot():
         ])
         #initialize variables
         self.v, self.omega = self.controls[...]
-        # number of controls #TODOD: REMOVE
-        n_controls = self.controls.size
+
 
         
         ## Unicycle model for the turtlebot

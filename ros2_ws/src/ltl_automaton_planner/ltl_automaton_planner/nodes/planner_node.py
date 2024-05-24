@@ -104,7 +104,6 @@ class MainPlanner(Node):
 
         # define timestap of the first ts_state recived from agent
         # using messages because the structure is easier to use and understand
-        #TODOD: check if something has been broken by this change
         self.prev_received_timestamp = self.get_clock().now().to_msg() #rclpy.time.Time().to_msg()
         
         #If initial TS states is from agent, wait from agent state callback

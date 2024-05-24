@@ -53,7 +53,6 @@ class sync_LTLPlanner(LTLPlanner):
                 else:
                     # update index and segment
                     j=self.index
-                    #FIXMED: not defined
                     segment = self.new_segment    
             # in the prefix plan
             if segment == 'line':
@@ -125,11 +124,14 @@ class sync_LTLPlanner(LTLPlanner):
                 #TODOD: probably there is a better way to detour avoiding coming back exactly at the beginning but later
                 # getting the initial state
                 if self.segment == 'line':
+                   # s_ts= index+1
+                   # f_ts= index+2 
+                   # check where they are and if i need to change the numbering
+                   # add also time from last action
                     f_ts_node = self.run.line[self.index]
                 else:
                     f_ts_node = self.run.loop[self.index]
                 
-                # TODOD: add the minimization problem to find the best position to place the detour
                 # again because want to go back to the initial state
                 path[t_ts_node], time_ready, detour_time = self.shortest_path_ts(ts, f_ts_node, t_ts_node)
                 reply[t_ts_node] = (True, time_ready)
@@ -270,7 +272,7 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
-                #IMPORTANTD: decide when we consider a detour finished
+                #FIXMED: agent free at the end of the detour but if it is not a delayed
                 self.contract_time = 0
             # returning the next move
             return self.next_move
