@@ -197,7 +197,7 @@ class MPC_Turtlebot():
     def get_CBF(self, X, U, obs):
         # define the barrier function
         print(obs)
-        print(type(obs))
+        print(type(obs[0]))
         h=ca.sqrt((X[0]-obs[0]/1.)**2+(X[1]-obs[1]/1.)**2)-(self.rob_diam/2.+obs[2]/1.)
         # calcilating the x_dot
         x_dot= self.f(X, U)        
