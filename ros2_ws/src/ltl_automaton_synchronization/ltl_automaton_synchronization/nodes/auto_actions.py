@@ -286,6 +286,9 @@ class SynchroActions(Node):
                 
     def list_obstacles(self):
         obs = self.static_obstacles_regions.values()
+        print(obs)
+        print("middle")
+        print(list(obs))
         obs.append(self.dynamic_obstacles_regions.values())
         return obs            
                 
