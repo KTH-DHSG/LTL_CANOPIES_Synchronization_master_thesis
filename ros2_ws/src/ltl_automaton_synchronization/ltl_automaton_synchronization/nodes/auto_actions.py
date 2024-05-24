@@ -176,7 +176,7 @@ class SynchroActions(Node):
         
         # updating the planner saying the collaborative action has ended (needed only for the master)
         # slave agents finish a collaboration at the end of the detour
-        if self.action_dict[action_key]['type'] != 'collaborative':            
+        if self.action_dict[action_key]['type'] == 'collaborative':            
             # Call service to update planner after collaboration
             self.finish_collab_srv.wait_for_service()
             self.finish_collab_srv.call(FinishCollab.Request())
