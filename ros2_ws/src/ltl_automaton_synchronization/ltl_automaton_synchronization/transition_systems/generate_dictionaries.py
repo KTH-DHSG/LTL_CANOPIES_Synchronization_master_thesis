@@ -25,27 +25,30 @@ def write_to_file(file_name="dictionary", dict={}):
 
 
 # output_standard() generates a standard dictionary for testing purposes
-def output_standard(file_name, robot_type):
+def output_standard(file_name, robot_type, mesurement_type):
     if robot_type=='rosie':
         ROBOT_SPEED = 0.5
         def dist(point1, point2):
             return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)/ROBOT_SPEED
-        # ROI = (x, y, radius)
-        ''' LAB MEASUREMENTS
-        H = [0, 0, 0.7]
-        D = [0.55, -2.15, 0.45]
-        M1 = [-0.35, 1.45, 0.45]
-        M2 = [1.45, 0.45, 0.45]
-     '   M3 = [-1.55, -0.35, 0.45]
-        M4 = [-1.95, -0.85, 0.45]     
-        '''
+        # ROI = (x, y, radius)  
+        if mesurement_type=='lab':
+            H = [0.003, 0.004, 0.7]
+            D = [0.444, -2.074, 0.42]
+            M1 = [-0.306, 1.526, 0.43]
+            M2 = [1.376, 0.432, 0.43]
+            M3 = [-1.495, -0.336, 0.43]
+            M4 = [-1.95, -0.85, 0.43]     #TODOD: change this to the correct value
+        elif mesurement_type=='nominal':        
+            H = [0, 0, 0.7]
+            D = [0.55, -2.15, 0.45]
+            M1 = [-0.35, 1.45, 0.45]
+            M2 = [1.45, 0.45, 0.45]
+            M3 = [-1.55, -0.35, 0.45]
+            M4 = [-0.85, -1.95, 0.45]
+        else:
+            print("Measurement type not recognized")
+            return
         
-        H = [0, 0, 0.7]
-        D = [0.55, -2.15, 0.45]
-        M1 = [-0.35, 1.45, 0.45]
-        M2 = [1.45, 0.45, 0.45]
-        M3 = [-1.55, -0.35, 0.45]
-        M4 = [-1.95, -0.85, 0.45]
         weights=[[dist(H,H), dist(H,D), dist(H,M1), dist(H,M2), dist(H,M3), dist(H,M4)],
                  [dist(D,H), dist(D,D), dist(D,M1), dist(D,M2), dist(D,M3), dist(D,M4)],
                  [dist(M1,H), dist(M1,D), dist(M1,M1), dist(M1,M2), dist(M1,M3), dist(M1,M4)],
@@ -86,25 +89,27 @@ def output_standard(file_name, robot_type):
         
        # ROI = (x, y, radius)
        
-        ''' LAB MEASUREMENTS
-        P1 = [-1.55, 1.05, 0.3]
-        P2 = [0.85, 1.45, 0.3]
-        P3 = [-0.15, -2.65, 0.3]
-        P4 = [1.35, -1.95, 0.3]
-        C1 = [-2.05, 1.95, 0.3]
-        C2 = [1.75, 1.95, 0.3]
-        C3 = [-2.05, -2.65, 0.3]
-        C4 = [7.75, -2.6, 0,3]
-       '''
-       
-        P1 = [-1.55, 1.05, 0.3]
-        P2 = [0.85, 1.45, 0.3]
-        P3 = [-0.15, -2.65, 0.3]
-        P4 = [1.35, -1.95, 0.3]
-        C1 = [-2.05, 1.95, 0.3]
-        C2 = [1.75, 1.95, 0.3]
-        C3 = [-2.05, -2.65, 0.3]
-        C4 = [7.75, -2.65, 0.3]
+        if mesurement_type=='lab':
+            P1 = [-1.485, 1.034, 0.14]
+            P2 = [0.821, 1.422, 0.14]
+            P3 = [-0.216, -2.554, 0.14]
+            P4 = [1.203, -1.877, 0.14]
+            C1 = [-1.958, 1.950, 0.14]
+            C2 = [1.706, 1.932, 0.14]
+            C3 = [-1.980, -2.534, 0.14]
+            C4 = [1.558, -2.549, 0.14]
+        elif mesurement_type=='nominal':                   
+            P1 = [-1.55, 1.05, 0.15]
+            P2 = [0.85, 1.45, 0.15]
+            P3 = [-0.15, -2.65, 0.15]
+            P4 = [1.35, -1.95, 0.15]
+            C1 = [-2.05, 1.95, 0.15]
+            C2 = [1.75, 1.95, 0.15]
+            C3 = [-2.05, -2.65, 0.15]
+            C4 = [1.75, -2.65, 0.15]
+        else:
+            print("Measurement type not recognized")
+            return
         weights=[[dist(P1,P1), dist(P1,P2), dist(P1,P3), dist(P1,P4), dist(P1,C1), dist(P1,C2), dist(P1,C3), dist(P1,C4)],
                  [dist(P2,P1), dist(P2,P2), dist(P2,P3), dist(P2,P4), dist(P2,C1), dist(P2,C2), dist(P2,C3), dist(P2,C4)],
                  [dist(P3,P1), dist(P3,P2), dist(P3,P3), dist(P3,P4), dist(P3,C1), dist(P3,C2), dist(P3,C3), dist(P3,C4)],
@@ -156,10 +161,13 @@ print("----------------------------------------")
 print("Please enter file name")
 prompt = '> '
 file_name = input(prompt)
-print("Please enter robot type")
+print("Please enter robot type (turtlebot or rosie) ")
 prompt = '> '
 robot_type = input(prompt)
-output_standard(file_name, robot_type)
+print("Please measurament  type (lab or nominal) ")
+prompt = '> '
+mesurement_type = input(prompt)
+output_standard(file_name, robot_type, mesurement_type)
 
 
 
