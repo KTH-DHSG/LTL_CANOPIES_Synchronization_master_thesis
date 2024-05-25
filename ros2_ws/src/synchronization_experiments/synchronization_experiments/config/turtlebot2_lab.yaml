@@ -148,7 +148,7 @@ action:
       dependency: {}
       type: local
     free:
-      weight: 1
+      weight: 8
       guard: '1'
       label: none
       dependency: {}

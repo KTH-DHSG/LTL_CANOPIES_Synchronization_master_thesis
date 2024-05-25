@@ -123,9 +123,15 @@ class SynchroPlanner(MainPlanner):
          
         
         
-    
+    #IMPORTANTD: this function must be adapted for each simulation
     # returns just the first region for simplicity for now
     def chose_ROI(self, dependency, *args, **kwargs):
+        print(self.agent_name)
+        if self.agent_name == '/turtlebot1':
+            return dependency[1][1]
+        if self.agent_name == '/turtlebot2':
+            return dependency[1][0]
+        
         return dependency[1][0]  
         
 

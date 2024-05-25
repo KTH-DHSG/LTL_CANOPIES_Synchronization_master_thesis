@@ -123,17 +123,40 @@ class sync_LTLPlanner(LTLPlanner):
             else:
                 #TODOD: probably there is a better way to detour avoiding coming back exactly at the beginning but later
                 # getting the initial state
-                if self.segment == 'line':
-                   # s_ts= index+1
-                   # f_ts= index+2 
-                   # check where they are and if i need to change the numbering
-                   # add also time from last action
-                    f_ts_node = self.run.line[self.index]
-                else:
-                    f_ts_node = self.run.loop[self.index]
+                print("segment: ", self.segment)
+                print("index: ", self.index)
+                print("line: ", self.run.line)
+                print("loop: ", self.run.loop)
                 
+                
+                
+                #if my curren action will bring me in a state inside the line plan
+                if self.segment == 'line' and self.index < len(self.run.line)-1:
+                    s_ts_node = self.run.line[self.index+1]
+                    # if the next action is the last of the line plan
+                    if self.index < len(self.run.line)-2:
+                        f_ts_node = self.run.line[self.index+2]
+                    # else it will be the first one in the loop
+                    else:
+                        f_ts_node = self.run.loop[0]
+                # if the current anction will bring me at the end of the line plan
+                elif self.segment == 'line' and self.index == len(self.run.line)-1:
+                    s_ts_node = self.run.loop[0]
+                    f_ts_node = self.run.loop[1]     
+                elif self.segment == 'loop' and self.index < len(self.run.loop)-1:
+                    s_ts_node = self.run.loop[self.index+1]
+                    # if the next action is the last of the loop plan
+                    if self.index < len(self.run.loop)-2:
+                        f_ts_node = self.run.loop[self.index+2]
+                    # else it will be the first one in the line
+                    else:
+                        f_ts_node = self.run.loop[0]
+                elif self.segment == 'loop' and self.index == len(self.run.loop)-1:
+                    s_ts_node = self.run.loop[0]
+                    f_ts_node = self.run.loop[1]
+                                
                 # again because want to go back to the initial state
-                path[t_ts_node], time_ready, detour_time = self.shortest_path_ts(ts, f_ts_node, t_ts_node)
+                path[t_ts_node], time_ready = self.shortest_path_ts(ts,s_ts_node, f_ts_node, t_ts_node)
                 reply[t_ts_node] = (True, time_ready)
         # save the path dictionary
         self.path = path.copy()
@@ -153,7 +176,6 @@ class sync_LTLPlanner(LTLPlanner):
     # if called it add the detour to the plan
     #TODOD: fix the function to adapt the plan 
     def adapt_plan(self, t_ts_node, time):
-        self.ros_node.get_logger().warning('Adapting plan to detour')
         self.detour_path = self.path[t_ts_node]
         # empty the detour list
         self.detour = []
@@ -165,10 +187,12 @@ class sync_LTLPlanner(LTLPlanner):
         # saving the current updating index
         self.dindex = 0
         self.contract_time = time
-        # saving past segment type to know where to start again 
+        # saving past segment type to know where to start again #FIXMED: ADD THE INDEX ETC OF NEW POINT
         self.past_segment=self.segment
         self.segment = 'detour'
+        self.ros_node.get_logger().warning('Adapting plan to detour: '+str(self.detour))
     
+    #FIXMED: CHECK INDECES
     def delay_collaboration(self, time):
         detour_length = round(time/self.action_dictionary['free']['weight'])
         # creating a detour of none actions
@@ -212,7 +236,7 @@ class sync_LTLPlanner(LTLPlanner):
         # removing contract time to allow checks in horizon
         self.contract_time = 0
     
-    
+    #FIXMED: CHECK INDECES 
     def find_next_move(self):
         # I have a detour to complete
         if self.segment == 'detour':
@@ -287,13 +311,14 @@ class sync_LTLPlanner(LTLPlanner):
     # shortest path in ts
     #===========================================
 
-    def shortest_path_ts(self, ts, f_ts_node, t_ts_node):
+    def shortest_path_ts(self, ts, s_ts_node, f_ts_node, t_ts_node):
+        # start_ts_node , final_ts_node, target_ts_node
         # if the nodes are not in the ts
-        if (f_ts_node not in ts) or (t_ts_node not in ts):
+        if (f_ts_node not in ts) or (t_ts_node not in ts) or (s_ts_node not in ts):
             return None, None, None
         else:
             # compute path to target node
-            path_pre, path_dist = dijkstra_predecessor_and_distance(ts, f_ts_node)
+            path_pre, path_dist = dijkstra_predecessor_and_distance(ts, s_ts_node)
             # compute path from target node
             path_pre_back, path_dist_back = dijkstra_predecessor_and_distance(ts, t_ts_node)
             # if a loop  starting and finishing in the initial state and passing from the target state does not exist
@@ -312,8 +337,8 @@ class sync_LTLPlanner(LTLPlanner):
             # compute the time ready to reach the target state
             time_ready = path_dist[path[len(path)-2]]
             # compute the total cost to of the detour
-            total_cost= path_dist_back[f_ts_node]+path_dist[t_ts_node]
-        return (final_path, time_ready, total_cost)
+            print('Path:', final_path)
+        return (final_path, time_ready)
 
     
     

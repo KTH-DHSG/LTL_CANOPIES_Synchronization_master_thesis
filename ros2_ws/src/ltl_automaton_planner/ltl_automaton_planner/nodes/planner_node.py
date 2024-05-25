@@ -306,14 +306,14 @@ class MainPlanner(Node):
                 if self.is_next_state_in_plan(state):
                     self.ltl_planner.find_next_move()
                     # Publish next move
-                    self.get_logger().info('LTL planner: Publishing next move')
+                    self.get_logger().info('LTL planner: Publishing next move, '+str(self.ltl_planner.next_move))
                     next_move_msg = String()
                     next_move_msg.data = self.ltl_planner.next_move
                     self.plan_pub.publish(next_move_msg)
 
                 # If state is not the next one in plan replan 
                 elif self.replan_on_unplanned_move:
-                    self.get_logger().warning('LTL planner: Received state is not the next one in the plan, replanning and publishing next move')
+                    self.get_logger().warning('LTL planner: Received state is not the next one in the plan, replanning and publishing next move, '+str(self.ltl_planner.next_move))
                     # Replan with state as initial
                     self.ltl_planner.replan_from_ts_state(state)
                     self.publish_plan()

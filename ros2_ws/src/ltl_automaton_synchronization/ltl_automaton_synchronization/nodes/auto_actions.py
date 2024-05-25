@@ -136,12 +136,14 @@ class SynchroActions(Node):
         next_state = ''
         weight = 0
         action_label = msg.data
-        
         # finding the next state and the weight of the action
         for state in self.robot_model.successors(self.current_state):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
+        print("action_label: ", action_label)
+        print("current_state: ", self.current_state)
+        print("next_state: ", next_state)
         # getting action key
         action_key = self.key_given_label(action_label)
         # check the type of action 
@@ -173,6 +175,8 @@ class SynchroActions(Node):
         # confirming the action has been completed and publishing new state
         self.get_logger().info('ACTION NODE: Publishing State: %s. After Action: %s' %(str(next_state), msg.data))
         self.state_pub.publish(next_state_msg)
+        # update current state
+        self.current_state = next_state
         
         # updating the planner saying the collaborative action has ended (needed only for the master)
         # slave agents finish a collaboration at the end of the detour
