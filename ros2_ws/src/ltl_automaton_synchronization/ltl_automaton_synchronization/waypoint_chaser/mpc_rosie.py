@@ -150,7 +150,7 @@ class MPC_Rosie():
         # adding constraints
         self.add_constraints()
 
-    def update_constraints(self):
+    def add_constraints(self):
         # empty constrains vector
         self.constr = []
 
