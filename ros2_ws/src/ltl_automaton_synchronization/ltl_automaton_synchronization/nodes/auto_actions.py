@@ -7,6 +7,7 @@ from ltl_automaton_msg_srv.msg import TransitionSystemStateStamped, TransitionSy
 from ltl_automaton_msg_srv.srv import FinishCollab
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import Twist, Vector3, PoseStamped, Point, Quaternion
+from nav_msgs.msg import Path
 import yaml
 from ltl_automaton_msg_srv.msg import SynchroConfirm
 
@@ -122,12 +123,15 @@ class SynchroActions(Node):
         self.finish_collab_srv = self.create_client(FinishCollab, "finished_collab", callback_group=client_cb_group)
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        
+        self.path_pub = self.create_publisher(Path, 'path', 10)
+        
 
         # MOCAP subscribers
         mocap_cb_group = ReentrantCallbackGroup()
         self.obs_sub={}
         for obstacle in self.dynamic_obstacles:
-            self.obs_sub[obstacle] = self.create_subscription(PoseStamped, '/qualisys'+obstacle+'/pose', lambda msg: self.obstacles_cb(msg, obstacle), 10, callback_group=mocap_cb_group)
+            self.obs_sub[obstacle] = self.create_subscription(PoseStamped, '/qualisys'+obstacle+'/pose', lambda msg, obst=obstacle: self.obstacles_cb(msg, obst), 10, callback_group=mocap_cb_group)
         # subscriber fot the pose of the robot
         self.current_pose = self.create_subscription(PoseStamped, '/qualisys'+self.agent+'/pose', self.update_pose_callback , 10, callback_group=mocap_cb_group)
     
@@ -248,35 +252,52 @@ class SynchroActions(Node):
         self.start_assising_flag = True
 
     def select_action(self, action_key, weight):
-        #check if we are not in a simulation
+        # check if we are not in a simulation
         if not self.is_simulation and action_key.startswith('goto'):
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
             x_0 =  self.current_pose
             #x_0 = np.array([0, 0, np.pi/3]).reshape(3, 1)
-            x_t = np.array([x, y, 0]).reshape(3, 1)    
+            x_t = np.array([x, y, 0]).reshape(3, 1) 
+            # initializing obstacles
+            obstacles= self.list_obstacles()  
             # MPC object based on the robot we are using
             if self.get_namespace().startswith('/turtlebot'):
-                mpc = MPC_Turtlebot(x_0, x_t)
+                mpc = MPC_Turtlebot(x_0, x_t, obstacles)
             else:
                 mpc = MPC_Rosie(x_0, x_t)
-            # update obstacles
-            obstacles = self.list_obstacles()
-            #obstacles = [[0, 1, 0]]
-            # update constraints
-            mpc.update_constraints(obstacles)
             # looping until i'm inside the region but with a smaller radius
+            #TODOD: clean the code
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
-                # mpc iteration
-                control = mpc.get_next_control()
-                # publish control
-                self.publish_vel_control(control)
+                time_init=self.get_clock().now().to_msg()
+                time_init=time_init.sec+time_init.nanosec*1e-9
                 # update obstacles
-                obstacles = self.list_obstacles()
-                # update constraints
-                mpc.update_constraints(obstacles)
+                mpc.obstacles = self.list_obstacles()
                 #update pose
                 mpc.x_0 = self.current_pose
+                # mpc iteration
+                control, path = mpc.get_next_control()                
+                time_end=self.get_clock().now().to_msg()
+                time_end=time_end.sec+time_end.nanosec*1e-9
+                self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
+                #print(control)
+                # used for rviz
+                path_msg = Path()
+                path_msg.header.stamp = self.get_clock().now().to_msg()
+                path_msg.header.frame_id = 'map'
+                for i in range(path.shape[1]):
+                    pose = PoseStamped()
+                    pose.pose.position = Point(x=path[0][i], y=path[1][i], z=0.0)
+                    pose.pose.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+                    path_msg.poses.append(pose)
+                
+                self.path_pub.publish(path_msg)
+                
+                
+                # publish control
+                self.publish_vel_control(control)
+
+
             # stop the robot at the end
             if self.get_namespace().startswith('/turtlebot'):
                 self.publish_vel_control([0.0, 0.0])
@@ -292,7 +313,7 @@ class SynchroActions(Node):
         obs = list(self.static_obstacles_regions.values())
         for obstacle in self.dynamic_obstacles:            
             obs.append(self.dynamic_obstacles_regions[obstacle])
-        return obs            
+        return np.array(obs)            
                 
                 
     def publish_vel_control(self, u):
@@ -334,7 +355,7 @@ class SynchroActions(Node):
         return None
 
     def obstacles_cb(self, msg, obstacle):
-        # update the region definition for the obstacle if valid        
+        # update the region definition for the obstacle if valid    
         if(not math.isnan(msg.pose.position.x)):
             self.dynamic_obstacles_regions[obstacle] = [msg.pose.position.x, msg.pose.position.y, self.dynamic_obstacles_regions[obstacle][2]]
     

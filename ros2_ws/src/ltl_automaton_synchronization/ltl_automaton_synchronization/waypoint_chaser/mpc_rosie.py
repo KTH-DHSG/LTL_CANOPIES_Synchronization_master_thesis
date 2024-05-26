@@ -4,11 +4,11 @@ import casadi.tools as ca_tools
 import numpy as np
 
 class MPC_Rosie():
-    def __init__(self, x_0, x_t):
+    def __init__(self, x_0, x_t, obstacles):
         # sampling time [s]
-        self.T = 1
+        self.T = 0.2
         # prediction horizon
-        self.N = 10
+        self.N = 60
         
         # Rosie dimention and specifications
         self.rob_diam = 0.55 # [m] 
@@ -69,9 +69,12 @@ class MPC_Rosie():
             (
                 # first n_states are the initial states and the next n_states are the reference states
                 ca_tools.entry('P', shape=n_states+n_states),
+                # matrix num obstacles x 3, each row is [x, y, radius]
+                ca_tools.entry('OBS', shape=obstacles.shape)
+            
             )
         ])
-        self.P, = self.current_parameters[...]
+        self.P, self.OBS = self.current_parameters[...]
         
         # TODOD: tune the cost function weights
         # cost function weights for difference in state
@@ -136,15 +139,18 @@ class MPC_Rosie():
         self.u_0 = np.array([0.0, 0.0, 0.0]*self.N).reshape(-1, 3).T
         # initial feedforward value
         self.ff_value = np.array([0.0, 0.0, 0.0]*(self.N+1)).reshape(-1, 3).T        
+        # initial obstacles
+        self.obstacles = obstacles 
         # initial parameters for the solver
         self.c_p = self.current_parameters(0)
         self.init_control = self.optimizing_target(0)
         
         # tuning Parameter for the barrier function
         self.alpha = 1.5
-        
+        # adding constraints
+        self.add_constraints()
 
-    def update_constraints(self, obstacles):
+    def update_constraints(self):
         # empty constrains vector
         self.constr = []
 
@@ -162,11 +168,11 @@ class MPC_Rosie():
             self.constr.append(self.X[i+1] - x_next_)
         # add constraints to obstacle distance
         for i in range(self.N+1):
-            for obs in obstacles:
+            for j in range(self.OBS.shape[0]):
                 if i<self.N :
-                    CBF_constr = self.get_CBF(self.X[i], self.U[i], obs)
+                    CBF_constr = self.get_CBF(self.X[i], self.U[i], self.OBS[j,:])
                 else:
-                    CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0, 0), obs)
+                    CBF_constr = self.get_CBF(self.X[i], ca.vertcat(0, 0, 0), self.OBS[j,:])
                 self.constr.append(CBF_constr)
                 
         # add contraints bounds
@@ -185,7 +191,7 @@ class MPC_Rosie():
             
         # add constraints for collision avoidance
         for _ in range(self.N+1):
-            for _ in range(len(obstacles)):
+            for _ in range(self.OBS.shape[0]):
                 # zero as lower bound since we don't want the robot to be inside the obstacle
                 self.lb_constr.append(0.0)           
                 # infinite as upper bound sincethe robot can be as far as it wants from the obstacle
@@ -211,6 +217,7 @@ class MPC_Rosie():
     def get_next_control(self):
         # updating the parameters
         self.c_p['P'] = np.concatenate((self.x_0, self.x_t))
+        self.c_p['OBS'] = self.obstacles
         # updating the initial control
         self.init_control['X', lambda x:ca.horzcat(*x)] = self.ff_value # [:, 0:N+1]
         self.init_control['U', lambda x:ca.horzcat(*x)] = self.u_0
@@ -228,7 +235,7 @@ class MPC_Rosie():
         # add the last estimated result now is n_states * (N+1)    
         self.ff_value = np.concatenate((ff_value, estimated_opt[-3:].reshape(3, 1)), axis=1)   
         # return the first control input
-        return u_0[:, 0]
+        return u_0[:, 0], self.ff_value
 
     
     

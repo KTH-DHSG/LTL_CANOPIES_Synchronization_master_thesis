@@ -84,8 +84,9 @@ class DataCollector(Node):
 
         # Initialize subscriber to recieve the actions done by each agent
         for agent in self.agents.keys():
-            self.action_sub = self.create_subscription(String, agent+'/next_move_cmd', self.qos_profile, lambda msg: self.update_actions_cb(msg, agent), callback_group=cb_group)
-            self.synchro_start_sub = self.create_subscription(String, agent+'synchro_start', lambda msg: self.update_collab_cb(msg, agent), self.qos_profile)
+            self.action_sub = self.create_subscription(String, agent+'/next_move_cmd', self.qos_profile, lambda msg, ag=agent: self.update_actions_cb(msg, ag), callback_group=cb_group)
+            #FIXMED: CHANGELAMBDA FUNCTION
+            self.synchro_start_sub = self.create_subscription(String, agent+'synchro_start', lambda msg, ag=agent: self.update_collab_cb(msg, ag), self.qos_profile)
        
         
     def save_callback(self):
