@@ -112,7 +112,7 @@ class MotActTS(DiGraph):
                         # create action node
                         if(act=='free'):
                             # add edge from None to action
-                            #IMPORTANTD: chnaged label to action (just the name to adapt to the planner)
+                            # changed label to action (just the name to adapt to the planner)
                             self.add_edge((reg, act), (reg, act_to), action = self.graph['action'].action[act_to]['label'], guard=self.graph['action'].action[act_to]['guard'], weight=self.graph['action'].action[act_to]['weight'], marker= 'visited')
                         # add edge from action to None
                         self.add_edge((reg, act_to), (reg, 'free'), action='none', guard='1', weight=self.graph['action'].action['free']['weight'], marker='visited')

@@ -8,11 +8,11 @@ class MPC_Rosie():
         # sampling time [s]
         self.T = 0.2
         # prediction horizon
-        self.N = 60
+        self.N = 50
         
         # Rosie dimention and specifications
-        self.rob_diam = 0.55 # [m] 
-        self.v_max = 0.5 
+        self.rob_diam = 0.65 # [m] 
+        self.v_max = 0.2 
         self.omega_max = 2.84 # [rad/s]
         
         # Arena limits 
@@ -80,7 +80,7 @@ class MPC_Rosie():
         # cost function weights for difference in state
         self.Q = np.array([[1.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, .1]])
         # cost function weights for difference in control
-        self.R = np.array([[0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.05]])
+        self.R = np.array([[0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.25]])
              
         # initialize the cost function
         self.obj = 0

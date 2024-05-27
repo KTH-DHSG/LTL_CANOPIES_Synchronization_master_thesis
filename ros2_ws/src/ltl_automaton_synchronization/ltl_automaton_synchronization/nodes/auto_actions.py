@@ -265,10 +265,11 @@ class SynchroActions(Node):
             if self.get_namespace().startswith('/turtlebot'):
                 mpc = MPC_Turtlebot(x_0, x_t, obstacles)
             else:
-                mpc = MPC_Rosie(x_0, x_t)
+                mpc = MPC_Rosie(x_0, x_t, obstacles)
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
+                
                 time_init=self.get_clock().now().to_msg()
                 time_init=time_init.sec+time_init.nanosec*1e-9
                 # update obstacles

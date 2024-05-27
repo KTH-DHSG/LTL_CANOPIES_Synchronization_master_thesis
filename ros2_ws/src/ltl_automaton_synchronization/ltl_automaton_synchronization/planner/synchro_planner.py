@@ -18,11 +18,12 @@ class sync_LTLPlanner(LTLPlanner):
         self.new_segment = ''
         self.past_segment = ''
         super().__init__(ros_node, ts, hard_spec, soft_spec, beta, gamma)
+        self.start_last_move = self.ros_node.get_clock().now().to_msg()
+        self.start_last_move = self.start_last_move.sec + self.start_last_move.nanosec/1e9
 
         
         # cooperative actions
-        #FIXMED: PROBABLY I CAN REMOVE , *args, **kwargs BUT IT REMAINS TO BE CHECKED
-    def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI, *args, **kwargs):
+    def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI):
         actual_time = self.ros_node.get_clock().now().to_msg()
         last_action_elapsed_time = round(((actual_time.sec + actual_time.nanosec/1e9)- (prev_received_timestamp.sec + prev_received_timestamp.nanosec/1e9)), 2)
         first_action_flag = True
@@ -65,7 +66,7 @@ class sync_LTLPlanner(LTLPlanner):
                         #insert the dependency in the request
                         for item in self.action_dictionary[act_key]['dependency'].items():
                             # chose the ROI
-                            roi = chose_ROI(item, *args, **kwargs)
+                            roi = chose_ROI(item)
                             # insert the request
                             request[(roi, item[0])] = k
                         # update contract time
@@ -92,7 +93,7 @@ class sync_LTLPlanner(LTLPlanner):
                         #insert the dependency in the request
                         for item in self.action_dictionary[act_key]['dependency'].items():
                             # chose the ROI
-                            roi = chose_ROI(item, *args, **kwargs)
+                            roi = chose_ROI(item)
                             # insert the request
                             request[(roi, item[0])] = k
                         # update contract time
@@ -126,8 +127,7 @@ class sync_LTLPlanner(LTLPlanner):
                 print("segment: ", self.segment)
                 print("index: ", self.index)
                 print("line: ", self.run.line)
-                print("loop: ", self.run.loop)
-                
+                print("loop: ", self.run.loop)          
                 
                 
                 #if my curren action will bring me in a state inside the line plan
@@ -238,6 +238,8 @@ class sync_LTLPlanner(LTLPlanner):
     
     #FIXMED: CHECK INDECES 
     def find_next_move(self):
+        self.start_last_move = self.ros_node.get_clock().now().to_msg()
+        self.start_last_move = self.start_last_move.sec + self.start_last_move.nanosec/1e9
         # I have a detour to complete
         if self.segment == 'detour':
             # I'm starting a detour 
@@ -296,7 +298,7 @@ class sync_LTLPlanner(LTLPlanner):
                 self.dindex += 1             
                 # updating the segment
                 self.segment = self.new_segment
-                #FIXMED: agent free at the end of the detour but if it is not a delayed
+                # free agent at the end of the detour
                 self.contract_time = 0
             # returning the next move
             return self.next_move
