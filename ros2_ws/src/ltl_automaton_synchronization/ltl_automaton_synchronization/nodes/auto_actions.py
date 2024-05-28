@@ -257,7 +257,6 @@ class SynchroActions(Node):
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
             x_0 =  self.current_pose
-            #x_0 = np.array([0, 0, np.pi/3]).reshape(3, 1)
             x_t = np.array([x, y, 0]).reshape(3, 1) 
             # initializing obstacles
             obstacles= self.list_obstacles()  
@@ -270,6 +269,7 @@ class SynchroActions(Node):
             #TODOD: clean the code
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
                 
+
                 time_init=self.get_clock().now().to_msg()
                 time_init=time_init.sec+time_init.nanosec*1e-9
                 # update obstacles
@@ -281,7 +281,8 @@ class SynchroActions(Node):
                 time_end=self.get_clock().now().to_msg()
                 time_end=time_end.sec+time_end.nanosec*1e-9
                 self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
-                #print(control)
+                
+                '''
                 # used for rviz
                 path_msg = Path()
                 path_msg.header.stamp = self.get_clock().now().to_msg()
@@ -293,7 +294,8 @@ class SynchroActions(Node):
                     path_msg.poses.append(pose)
                 
                 self.path_pub.publish(path_msg)
-                
+
+                '''
                 
                 # publish control
                 self.publish_vel_control(control)

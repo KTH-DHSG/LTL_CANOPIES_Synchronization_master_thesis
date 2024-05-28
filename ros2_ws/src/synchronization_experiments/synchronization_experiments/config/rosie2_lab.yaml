@@ -101,7 +101,7 @@ action:
     manipulate:
       weight: 15
       guard: m1 || m2 || m3 || m4
-      label: manipluate
+      label: manipulate
       dependency: {}
       type: local
     deliver:

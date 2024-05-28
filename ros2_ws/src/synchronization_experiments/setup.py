@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'try = synchronization_experiments.nodes.try:main',
             'rrc = synchronization_experiments.nodes.rrc_sim:main',
+            'data_collector = synchronization_experiments.nodes.data_collector:main',
         ],
     },
 )

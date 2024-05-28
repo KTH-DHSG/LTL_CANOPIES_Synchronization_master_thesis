@@ -34,7 +34,7 @@ class DataCollector(Node):
         self.setup_pub_sub()            
         self.timer_callback_group = rclpy.callback_groups.ReentrantCallbackGroup()
         self.save_timer = self.create_timer(10, self.save_callback, callback_group=self.timer_callback_group)
-            
+        self.init_time = self.get_clock().now().to_msg().sec+self.get_clock().now().to_msg().nanosec*1e-9  
             
             
             
@@ -68,14 +68,13 @@ class DataCollector(Node):
                 action_mod = ActionModel(action_dict)        
                 # Here we take the product of each element of state_models to define the full TS
                 robot_model = MotActTS(motion_ts, action_mod)
+                robot_model.build_full()
                 self.actions_dicts[self.possible_agent_types[i]] = robot_model.graph['action'].action
 
         #setting up data to be saved using only names of agents
         self.data_collector = {} 
         for agent in agents:
-            self.data_collector[agent] = AgentData()
-        
-                      
+            self.data_collector[agent] = AgentData()              
     
     def setup_pub_sub(self):
         self.qos_profile = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
@@ -84,36 +83,49 @@ class DataCollector(Node):
 
         # Initialize subscriber to recieve the actions done by each agent
         for agent in self.agents.keys():
-            self.action_sub = self.create_subscription(String, agent+'/next_move_cmd', self.qos_profile, lambda msg, ag=agent: self.update_actions_cb(msg, ag), callback_group=cb_group)
-            self.synchro_start_sub = self.create_subscription(String, agent+'synchro_start', lambda msg, ag=agent: self.update_collab_cb(msg, ag), self.qos_profile)
+            self.action_sub = self.create_subscription(String, agent+'/next_move_cmd', lambda msg, ag=agent: self.update_actions_cb(msg, ag), self.qos_profile, callback_group=cb_group)
+            self.synchro_start_sub = self.create_subscription(String, agent+'/synchro_start', lambda msg, ag=agent: self.update_collab_cb(msg, ag), self.qos_profile)
        
         
     def save_callback(self):
         with open(self.save_location, 'wb') as f:
             pickle.dump(self.data_collector, f, pickle.HIGHEST_PROTOCOL)
+        message = 'Data saved at: '+str(self.save_location)
+        self.get_logger().info(f"\033[32m{message}\033[0m")
     
     
     def update_actions_cb(self, msg, agent):
         time= self.get_clock().now().to_msg()
-        action_start = time.sec+time.nanosec*1e-9
+        action_start = time.sec+time.nanosec*1e-9-self.init_time
         action = msg.data
-        action_type = self.actions_dicts[self.agents[agent]][action]        
-        self.data_collector[agent].add_action(action, action_type, action_start)    
+        # added because different label and entry in the dictionary
+        if action=='none':
+            action_type = 'local'
+        else:
+            action_type = self.actions_dicts[self.agents[agent]][action]['type']        
+        self.data_collector[agent].add_action(action, action_type, action_start)
+        self.get_logger().info('[Action Recorded] Agent: '+str(agent)+ ' Action: '+str(action)+ ' Type: '+str(action_type)+ ' Time: ' + str(action_start))   
         
     def update_collab_cb(self, msg, agent):
         time= self.get_clock().now().to_msg()
-        collab_start = time.sec+time.nanosec*1e-9
-        self.data_collector[agent].add_collab(collab_start)        
+        collab_start = time.sec+time.nanosec*1e-9-self.init_time
+        self.data_collector[agent].add_collab(collab_start)
+        message ='[Collaboration Recorded] Agent: '+str(agent)+' Collaboration Start: '+str(collab_start)
+        self.get_logger().info(f"\033[33m{message}\033[0m")        
         #if the data of the master is not empty
         if self.data_collector[msg.data].collab_start: 
             # if the last data recorded is more than 2 second ago
             # (just to avoid double recording of the same data)
             # then add the data
-            if self.data_collector[msg.data].collab_start[-1]-collab_start>2:
+            if collab_start-self.data_collector[msg.data].collab_start[-1]>2:
                 self.data_collector[msg.data].add_collab(collab_start)
+                message ='[Collaboration Recorded] Agent: '+str(msg.data)+' Collaboration Start: '+str(collab_start)
+                self.get_logger().info(f"\033[33m{message}\033[0m")
         # if empty then just add the data
         else:
             self.data_collector[msg.data].add_collab(collab_start)
+            message ='Recorded Collaboration Agent: '+str(msg.data)+' Collaboration Start: '+str(collab_start)
+            self.get_logger().info(f"\033[33m{message}\033[0m")
     
     
 

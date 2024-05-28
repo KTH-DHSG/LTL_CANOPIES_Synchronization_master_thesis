@@ -17,10 +17,11 @@ class sync_LTLPlanner(LTLPlanner):
         self.detour = []
         self.new_segment = ''
         self.past_segment = ''
+        self.new_index = 0
         super().__init__(ros_node, ts, hard_spec, soft_spec, beta, gamma)
         self.start_last_move = self.ros_node.get_clock().now().to_msg()
         self.start_last_move = self.start_last_move.sec + self.start_last_move.nanosec/1e9
-
+        self.past_conditions = {} # t_ts_node: (past_segment, new_segment, new_index) conditions which determines where i come back
         
         # cooperative actions
     def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI):
@@ -122,12 +123,11 @@ class sync_LTLPlanner(LTLPlanner):
             if (self.contract_time)>0 or (not ts.has_node(t_ts_node)):
                 reply[t_ts_node] = (False, 0)
             else:
-                #TODOD: probably there is a better way to detour avoiding coming back exactly at the beginning but later
-                # getting the initial state
-                print("segment: ", self.segment)
-                print("index: ", self.index)
-                print("line: ", self.run.line)
-                print("loop: ", self.run.loop)          
+               # getting the initial state
+                #print("segment: ", self.segment)
+                #print("index: ", self.index)
+                #print("line: ", self.run.line)
+                #print("loop: ", self.run.loop)          
                 
                 
                 #if my curren action will bring me in a state inside the line plan
@@ -136,25 +136,31 @@ class sync_LTLPlanner(LTLPlanner):
                     # if the next action is the last of the line plan
                     if self.index < len(self.run.line)-2:
                         f_ts_node = self.run.line[self.index+2]
+                        self.past_conditions[t_ts_node] = ('line', 'line', self.index+1)
                     # else it will be the first one in the loop
                     else:
                         f_ts_node = self.run.loop[0]
+                        self.past_conditions[t_ts_node] = ('line', 'loop', 0) 
                 # if the current anction will bring me at the end of the line plan
                 elif self.segment == 'line' and self.index == len(self.run.line)-1:
                     s_ts_node = self.run.loop[0]
-                    f_ts_node = self.run.loop[1]     
+                    f_ts_node = self.run.loop[1]
+                    self.past_conditions[t_ts_node] = ('line', 'loop', 0)     
                 elif self.segment == 'loop' and self.index < len(self.run.loop)-1:
                     s_ts_node = self.run.loop[self.index+1]
                     # if the next action is the last of the loop plan
                     if self.index < len(self.run.loop)-2:
                         f_ts_node = self.run.loop[self.index+2]
-                    # else it will be the first one in the line
+                        self.past_conditions[t_ts_node] = ('loop', 'loop', self.index+1)
+                    # else it will be the first one in the loop
                     else:
                         f_ts_node = self.run.loop[0]
+                        self.past_conditions[t_ts_node] = ('loop', 'loop', 0)
                 elif self.segment == 'loop' and self.index == len(self.run.loop)-1:
                     s_ts_node = self.run.loop[0]
                     f_ts_node = self.run.loop[1]
-                                
+                    self.past_conditions[t_ts_node] = ('loop', 'loop', 0)                                
+                print("past_conditions: ", self.past_conditions[t_ts_node])
                 # again because want to go back to the initial state
                 path[t_ts_node], time_ready = self.shortest_path_ts(ts,s_ts_node, f_ts_node, t_ts_node)
                 reply[t_ts_node] = (True, time_ready)
@@ -174,7 +180,6 @@ class sync_LTLPlanner(LTLPlanner):
     
     
     # if called it add the detour to the plan
-    #TODOD: fix the function to adapt the plan 
     def adapt_plan(self, t_ts_node, time):
         self.detour_path = self.path[t_ts_node]
         # empty the detour list
@@ -182,17 +187,21 @@ class sync_LTLPlanner(LTLPlanner):
         for i in range(len(self.detour_path)-1):
             action = self.product.graph['ts'][self.detour_path[i]][self.detour_path[i+1]]['action']
             self.detour.append(action)
-        # empty the path    
+        # empty the path
         self.path = {}
         # saving the current updating index
         self.dindex = 0
         self.contract_time = time
-        # saving past segment type to know where to start again #FIXMED: ADD THE INDEX ETC OF NEW POINT
-        self.past_segment=self.segment
+        # saving past segment type to know where to start again
+        self.past_segment = self.past_conditions[t_ts_node][0]
+        self.new_segment = self.past_conditions[t_ts_node][1]
+        self.new_index = self.past_conditions[t_ts_node][2]
+        # empty past conditions
+        self.past_conditions = {}
         self.segment = 'detour'
         self.ros_node.get_logger().warning('Adapting plan to detour: '+str(self.detour))
     
-    #FIXMED: CHECK INDECES
+    
     def delay_collaboration(self, time):
         detour_length = round(time/self.action_dictionary['free']['weight'])
         # creating a detour of none actions
@@ -236,7 +245,6 @@ class sync_LTLPlanner(LTLPlanner):
         # removing contract time to allow checks in horizon
         self.contract_time = 0
     
-    #FIXMED: CHECK INDECES 
     def find_next_move(self):
         self.start_last_move = self.ros_node.get_clock().now().to_msg()
         self.start_last_move = self.start_last_move.sec + self.start_last_move.nanosec/1e9
@@ -244,38 +252,15 @@ class sync_LTLPlanner(LTLPlanner):
         if self.segment == 'detour':
             # I'm starting a detour 
             if self.dindex == 0:
-                # if index is not the last of the pre_plan...
-                if self.past_segment == 'line' and self.index < len(self.run.pre_plan)-1:
+                if self.past_segment == 'line':
                     # Add the node that has been visited to trace
-                    self.trace.append(self.run.line[self.index])
-                    # Increment index counter
-                    self.index += 1
-                    # saving the segment of the state when we will comback to the original plan
-                    self.new_segment = 'line'
-                # If index is the last of the pre-plan or equivalently if the pre_plan is short...
-                elif (self.past_segment == 'line') and ((self.index == len(self.run.pre_plan)-1) or (len(self.run.pre_plan) <= 1)):
-                    # Add the node that has been visited to trace
-                    self.trace.append(self.run.line[self.index])
-                    # Reset index for the suffix loop
-                    self.index = 0
-                    # saving the segment of the state when we will comback to the original plan
-                    self.new_segment = 'loop'
-                # If index is not the last of the suffix plan or equivalently the suf_plan is short...
-                elif self.past_segment == 'loop' and self.index < len(self.run.suf_plan)-1:
+                    self.trace.append(self.run.line[self.index])   
+                elif self.past_segment == 'loop':
                     # Add the node that has been visited to trace
                     self.trace.append(self.run.loop[self.index])
-                    # Increment the index
-                    self.index += 1
-                    # saving the segment of the state when we will comback to the original plan
-                    self.new_segment = 'loop'
-                # If index is the last element of the suf_plan or equivalently the suf_plan is short....
-                elif (self.past_segment == 'loop') and ((self.index == len(self.run.suf_plan)-1) or (len(self.run.suf_plan) <= 1)):
-                    # Add the node that has been visited to trace
-                    self.trace.append(self.run.loop[self.index])
-                    # Resent index 
-                    self.index = 0
-                    # saving the segment of the state when we will comback to the original plan
-                    self.new_segment = 'loop'
+                
+                # update the index
+                self.index= self.new_index
                 # Extract next move from detour
                 self.next_move = self.detour[self.dindex]
                 # Increment index counter
