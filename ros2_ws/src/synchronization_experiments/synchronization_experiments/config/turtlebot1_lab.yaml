@@ -127,7 +127,7 @@ action:
   initial: free
   actions:
     check_connection:
-      weight: 30
+      weight: 7
       guard: c1 || c3
       label: check_connection
       dependency:
@@ -136,13 +136,13 @@ action:
         - c4
       type: collaborative
     h_check_connection:
-      weight: 25
+      weight: 5
       guard: c2 || c4
       label: h_check_connection
       dependency: {}
       type: assisting
     patrol:
-      weight: 20
+      weight: 6
       guard: p1 || p2 || p3 || p4
       label: patrol
       dependency: {}

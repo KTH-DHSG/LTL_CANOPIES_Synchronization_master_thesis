@@ -267,7 +267,7 @@ class SynchroActions(Node):
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
-            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
+            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.8*radius:            
                 
 
                 time_init=self.get_clock().now().to_msg()
@@ -276,6 +276,9 @@ class SynchroActions(Node):
                 mpc.obstacles = self.list_obstacles()
                 #update pose
                 mpc.x_0 = self.current_pose
+                #print('obstacles: ', mpc.obstacles)
+                #print('x_0: ', mpc.x_0)
+                
                 # mpc iteration
                 control, path = mpc.get_next_control()                
                 time_end=self.get_clock().now().to_msg()

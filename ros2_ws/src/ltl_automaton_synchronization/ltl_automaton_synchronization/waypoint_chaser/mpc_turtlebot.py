@@ -8,12 +8,12 @@ class MPC_Turtlebot():
         # sampling time [s]
         self.T = 0.2
         # prediction horizon
-        self.N = 60
+        self.N = 50
 
         # Turtlebot dimention and specifications
-        self.rob_diam = 0.2 # [m] #actual max dimension is 0.178
-        self.v_max = 0.1 # [m/s]
-        self.omega_max = 1.5 # [rad/s]
+        self.rob_diam = 0.25 # [m] #actual max dimension is 0.178
+        self.v_max = 0.15 # [m/s]
+        self.omega_max = 1.2 # [rad/s]
         
         # Arena limits 
         self.arena_x_max = 1.877 - self.rob_diam/2.

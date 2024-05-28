@@ -109,7 +109,6 @@ class SynchroPlanner(MainPlanner):
         self.reply_publishers = {}
         for agent in self.agents:
             self.reply_publishers[agent]= self.create_publisher(SynchroReply, agent+'/synchro_reply', self.qos_profile)
-        
         self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply)
            
         # creating a confirm publisher

@@ -85,7 +85,7 @@ action:
   initial: free
   actions:
     load:
-      weight: 20
+      weight: 8
       guard: h
       label: load
       dependency:
@@ -93,7 +93,7 @@ action:
         - h
       type: collaborative
     h_load:
-      weight: 20
+      weight: 8
       guard: h
       label: h_load
       dependency: {}
@@ -105,13 +105,13 @@ action:
       dependency: {}
       type: local
     deliver:
-      weight: 30
+      weight: 6
       guard: d
       label: deliver
       dependency: {}
       type: local
     harvest:
-      weight: 40
+      weight: 15
       guard: h
       label: harvest
       dependency: {}

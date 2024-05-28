@@ -6,8 +6,9 @@ file_path = '/home/davide/git_thesis/LTL_CANOPIES_Synchronization_master_thesis/
 # Open the pickle file and load the data
 with open(file_path, 'rb') as file:
     data = pickle.load(file)
+print(data)
 #added by hand because it is easier to do
-initial_regions = ['m1', 'h']
+initial_regions = ['m1', 'h', 'p3', 'p1' ]
 # Assuming data is a dictionary with agent names as keys and AgentData as values
 agents = list(data.keys())
 activity_colors = {'assisting': 'red', 'local': 'blue', 'collaborative': 'green'}
@@ -34,7 +35,7 @@ for i, agent in enumerate(agents):
             ax.hlines(i, start_time, end_time, colors=color, linewidth=2.5, label=action if i == 0 and j == 0 else "")
             ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
             # Add action name above the line
-            ax.text((start_time + end_time) / 2, i -0.04, f'{actions[j]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=9)
+            ax.text((start_time + end_time) / 2, i -0.15, f'{actions[j]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=13)
         elif actions[j].startswith('goto'):
             last_region = actions[j].split('_')[-1]
     # Plot the last action that ends with the plot range end
@@ -47,7 +48,7 @@ for i, agent in enumerate(agents):
         ax.hlines(i, start_time, end_time, colors=color, linewidth=2.5, label=action if i == 0 and j == 0 else "")
         ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
         # Add action name above the line
-        ax.text((start_time + end_time) / 2, i -0.04, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=11)
+        ax.text((start_time + end_time) / 2, i -0.15, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=13)
         
     # Plot collaboration start times
     ax.scatter(collab_start, [i] * len(collab_start), color='black', marker=collab_marker, s=100, label='Collab Start' if i == 0 else "")
@@ -64,7 +65,7 @@ ax.set_yticks(range(len(agents)))
 ax.set_yticklabels(agents)
 ax.set_title('Activity Plot by Agent')
 # set limit of plot
-ax.set_xlim(-10, 200)
-ax.set_ylim(-1, 2)
+ax.set_xlim(-10, 400)
+ax.set_ylim(-1, 4)
 
 plt.show()
