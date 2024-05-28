@@ -9,6 +9,7 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallb
 from ltl_automaton_msg_srv.srv import FinishCollab
 from ltl_automaton_msg_srv.msg import SynchroConfirm, SynchroRequest, SynchroReply
 
+from std_msgs.msg import String
 import networkx as nx
 import matplotlib.pyplot as plt
 import yaml
@@ -120,7 +121,10 @@ class SynchroPlanner(MainPlanner):
         #creating service to update planner after a collaboration
         finished_collab_srv_cb_group = MutuallyExclusiveCallbackGroup()
         self.finished_collab_srv = self.create_service(FinishCollab, 'finished_collab', self.finished_collab_callback, callback_group=finished_collab_srv_cb_group)
-         
+        
+        #used to update last actions for the planner
+        # Initialize publisher to send plan commands
+        self.plan_sub = self.create_subscription(String, 'next_move_cmd', self.next_move_cmd_callback, self.qos_profile)
         
         
     #IMPORTANTD: this function must be adapted for each simulation
@@ -347,6 +351,16 @@ class SynchroPlanner(MainPlanner):
         self.ltl_planner.contract_time = 0
         return response
      
+    def next_move_cmd_callback(self, msg):
+        now = self.get_clock().now().to_msg()
+        self.ltl_planner.start_last_move = now.sec+now.nanosec*1e-9
+        
+        enty =''
+        for key, value in self.robot_model.graph['action'].action.items():
+            if value['label'] == msg.data:
+                entry = key
+                break
+        self.ltl_planner.last_weight = self.robot_model.graph['action'].action[entry]['weight']
     #-----------------------------------------------------
     # Check if given TS state is the next one in the plan
     #-----------------------------------------------------

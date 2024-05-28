@@ -19,10 +19,10 @@ class sync_LTLPlanner(LTLPlanner):
         self.past_segment = ''
         self.new_index = 0
         super().__init__(ros_node, ts, hard_spec, soft_spec, beta, gamma)
-        self.start_last_move = self.ros_node.get_clock().now().to_msg()
-        self.start_last_move = self.start_last_move.sec + self.start_last_move.nanosec/1e9
         self.past_conditions = {} # t_ts_node: (past_segment, new_segment, new_index) conditions which determines where i come back
-        
+        # variables used to take into account time required to finish current action
+        self.last_weight = 0
+        self.start_last_move = 0
         # cooperative actions
     def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI):
         actual_time = self.ros_node.get_clock().now().to_msg()
@@ -114,7 +114,6 @@ class sync_LTLPlanner(LTLPlanner):
         return None
     
     def evaluate_request(self, request, alpha=1):
-        #TODOD: take into account also time to finish current action
         reply = dict()
         path = dict()
         for t_ts_node, time in request.items():
@@ -123,6 +122,10 @@ class sync_LTLPlanner(LTLPlanner):
             if (self.contract_time)>0 or (not ts.has_node(t_ts_node)):
                 reply[t_ts_node] = (False, 0)
             else:
+                now= self.ros_node.get_clock().now().to_msg()
+                now = now.sec + now.nanosec/1e9
+                #calculating time remaining for current action
+                time_remaining = max(0, self.last_weight-(now- self.start_last_move))
                # getting the initial state
                 #print("segment: ", self.segment)
                 #print("index: ", self.index)
@@ -163,7 +166,8 @@ class sync_LTLPlanner(LTLPlanner):
                 print("past_conditions: ", self.past_conditions[t_ts_node])
                 # again because want to go back to the initial state
                 path[t_ts_node], time_ready = self.shortest_path_ts(ts,s_ts_node, f_ts_node, t_ts_node)
-                reply[t_ts_node] = (True, time_ready)
+                #adding also the time remaining for the current action
+                reply[t_ts_node] = (True, time_ready+time_remaining)
         # save the path dictionary
         self.path = path.copy()
         return reply

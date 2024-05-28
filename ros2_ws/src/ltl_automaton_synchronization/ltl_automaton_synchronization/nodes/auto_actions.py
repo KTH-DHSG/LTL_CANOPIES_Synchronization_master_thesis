@@ -145,9 +145,9 @@ class SynchroActions(Node):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
-        print("action_label: ", action_label)
-        print("current_state: ", self.current_state)
-        print("next_state: ", next_state)
+        #print("action_label: ", action_label)
+        #print("current_state: ", self.current_state)
+        #print("next_state: ", next_state)
         # getting action key
         action_key = self.key_given_label(action_label)
         # check the type of action 
