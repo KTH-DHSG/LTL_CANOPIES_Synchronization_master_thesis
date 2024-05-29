@@ -6,14 +6,14 @@ import numpy as np
 class MPC_Turtlebot():
     def __init__(self, x_0, x_t, obstacles):
         # sampling time [s]
-        self.T = 0.2
+        self.T = 0.1
         # prediction horizon
-        self.N = 50
+        self.N = 30
 
         # Turtlebot dimention and specifications
         self.rob_diam = 0.25 # [m] #actual max dimension is 0.178
-        self.v_max = 0.15 # [m/s]
-        self.omega_max = 1.2 # [rad/s]
+        self.v_max = 0.2 # [m/s]
+        self.omega_max = 1.5 # [rad/s]
         
         # Arena limits 
         self.arena_x_max = 1.877 - self.rob_diam/2.
@@ -77,9 +77,9 @@ class MPC_Turtlebot():
         
         # TODOD: tune the cost function weights
         # cost function weights for difference in state
-        self.Q = np.array([[1.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, .1]])
+        self.Q = np.array([[5.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, 0.0]])
         # cost function weights for difference in control
-        self.R = np.array([[0.5, 0.0], [0.0, 0.05]])
+        self.R = np.array([[0.5, 0.0], [0.0, 0.2]])
              
         # initialize the cost function
         self.obj = 0

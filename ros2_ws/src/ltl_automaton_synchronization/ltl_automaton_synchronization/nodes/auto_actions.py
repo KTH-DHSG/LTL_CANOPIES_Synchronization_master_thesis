@@ -145,9 +145,9 @@ class SynchroActions(Node):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
-        #print("action_label: ", action_label)
-        #print("current_state: ", self.current_state)
-        #print("next_state: ", next_state)
+        print("action_label: ", action_label)
+        print("current_state: ", self.current_state)
+        print("next_state: ", next_state)
         # getting action key
         action_key = self.key_given_label(action_label)
         # check the type of action 
@@ -267,7 +267,7 @@ class SynchroActions(Node):
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
-            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.8*radius:            
+            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
                 
 
                 time_init=self.get_clock().now().to_msg()
@@ -283,8 +283,8 @@ class SynchroActions(Node):
                 control, path = mpc.get_next_control()                
                 time_end=self.get_clock().now().to_msg()
                 time_end=time_end.sec+time_end.nanosec*1e-9
-                self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
-                
+                #self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
+                #print('control: ', control)
                 '''
                 # used for rviz
                 path_msg = Path()

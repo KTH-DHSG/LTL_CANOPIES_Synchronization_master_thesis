@@ -99,7 +99,7 @@ action:
       dependency: {}
       type: assisting
     manipulate:
-      weight: 15
+      weight: 7
       guard: m1 || m2 || m3 || m4
       label: manipulate
       dependency: {}

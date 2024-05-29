@@ -51,7 +51,7 @@ class DataCollector(Node):
         self.agents={}
         for i in range(len(agents)):
             self.agents[agents[i]]=agents_types[i]
-        
+        print(self.agents)
         # getting type of agents involved THE FOLLOWING 2 PARAMETERS MUST HAVE THE SAME ORDER
         self.possible_agent_types = self.declare_parameter('possible_agent_types', ['']).value
         # retrieving full dictionary and retrieving motion and action dictionaries        

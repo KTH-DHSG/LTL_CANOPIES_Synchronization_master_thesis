@@ -5,7 +5,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
-    agents = ['/rosie0','/rosie1' '/rosie2', '/turtlebot1', '/turtlebot2']
+    agents = ['/rosie0','/rosie1', '/rosie2', '/turtlebot1', '/turtlebot2']
     agents_types = ['rosie', 'rosie', 'rosie','turtlebot', 'turtlebot']
     possible_agent_types = ['rosie', 'turtlebot']
     node= Node(

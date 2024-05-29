@@ -7,6 +7,8 @@ file_path = '/home/davide/git_thesis/LTL_CANOPIES_Synchronization_master_thesis/
 with open(file_path, 'rb') as file:
     data = pickle.load(file)
 print(data)
+del data['/turtlebot1']
+del data['/turtlebot2']
 #added by hand because it is easier to do
 initial_regions = ['m1', 'h', 'p3', 'p1' ]
 # Assuming data is a dictionary with agent names as keys and AgentData as values
@@ -40,7 +42,7 @@ for i, agent in enumerate(agents):
             last_region = actions[j].split('_')[-1]
     # Plot the last action that ends with the plot range end
     start_time = action_start[-1]
-    end_time = 500 # or any other endpoint
+    end_time = 1000 # or any other endpoint
     action = action_types[-1]
     color = activity_colors[action]
     marker = activity_markers[action]
@@ -65,7 +67,7 @@ ax.set_yticks(range(len(agents)))
 ax.set_yticklabels(agents)
 ax.set_title('Activity Plot by Agent')
 # set limit of plot
-ax.set_xlim(-10, 400)
+ax.set_xlim(-10, 500)
 ax.set_ylim(-1, 4)
 
 plt.show()
