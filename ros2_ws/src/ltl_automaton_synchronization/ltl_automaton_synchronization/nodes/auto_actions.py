@@ -283,7 +283,7 @@ class SynchroActions(Node):
                 control, path = mpc.get_next_control()                
                 time_end=self.get_clock().now().to_msg()
                 time_end=time_end.sec+time_end.nanosec*1e-9
-                #self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
+                self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
                 #print('control: ', control)
                 '''
                 # used for rviz
