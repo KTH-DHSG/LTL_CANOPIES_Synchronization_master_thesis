@@ -267,6 +267,7 @@ class SynchroActions(Node):
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
+            print(x_0)
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
                 
 

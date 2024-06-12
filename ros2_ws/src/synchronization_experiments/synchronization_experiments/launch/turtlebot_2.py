@@ -15,11 +15,11 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot2_lab.yaml')},
+                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot2_nominal.yaml')},
                 {'agents': agents},
                 {'dynamic_obstacles': dynamic_obstacles},
                 {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'obstacles.yaml')},                
-                {'is_simulation': False},
+                {'is_simulation': True},
             ]
         )
     
@@ -34,7 +34,7 @@ def generate_launch_description():
                 {'hard_task':'[]<> (patrol && p3 && <> (patrol && p4 && <>(check_connection && c3) ))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
-                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot2_lab.yaml')},
+                {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot2_nominal.yaml')},
                 {'agents': agents},
                 {'time_horizon': 10},
             ]

@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     agents = ['/rosie0','/rosie1', '/rosie2','/turtlebot1', '/turtlebot2']
-    dynamic_obstacles = ['/rosie0','/rosie1','/rosie2', '/turtlebot2']#,'/rosie1'
+    dynamic_obstacles = ['/rosie2']#['/rosie0','/rosie1','/rosie2', '/turtlebot2']#,'/rosie1'
     action_node= Node(
             package='ltl_automaton_synchronization',
             executable='auto_actions',
@@ -18,8 +18,8 @@ def generate_launch_description():
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot1_nominal.yaml')},
                 {'agents': agents},
                 {'dynamic_obstacles': dynamic_obstacles},
-                {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'obstacles.yaml')},                
-                {'is_simulation': True},
+                {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'obstacles_test.yaml')},                
+                {'is_simulation': False},
             ]
         )   
     
@@ -32,7 +32,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'<>(patrol && <>(check_connection && c1)) && []<> (patrol && p1 && <> (patrol && p2 ))' },#<>(check_connection && c1) && 
+                {'hard_task':'[]<> (p4 && <> (p3))' },#<>(check_connection && c1) && 
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'turtlebot1_nominal.yaml')},

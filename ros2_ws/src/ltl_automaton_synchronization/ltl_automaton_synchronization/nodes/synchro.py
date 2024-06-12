@@ -91,7 +91,8 @@ class SynchroPlanner(MainPlanner):
 
         # initialize storage of set of possible runs in product
         self.ltl_planner.posb_runs = set([(n,) for n in self.ltl_planner.product.graph['initial']])
-
+        nodes = len(self.robot_model.nodes())
+        self.get_logger().warn('Nodes wFTS: %d' % nodes)
         
         
     

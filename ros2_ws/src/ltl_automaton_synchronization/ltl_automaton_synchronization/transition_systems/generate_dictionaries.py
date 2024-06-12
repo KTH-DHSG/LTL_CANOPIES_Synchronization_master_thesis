@@ -26,7 +26,7 @@ def write_to_file(file_name="dictionary", dict={}):
 # output_standard() generates a standard dictionary for testing purposes
 def output_standard(file_name, robot_type, mesurement_type):
     if robot_type=='rosie':
-        ROBOT_SPEED = 0.5
+        ROBOT_SPEED = 0.2
         def dist(point1, point2):
             return math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)/ROBOT_SPEED
         # ROI = (x, y, radius)  
@@ -73,11 +73,11 @@ def output_standard(file_name, robot_type, mesurement_type):
             'type': 'ActionModel',
             'initial':'free', #free=none
             'actions':{
-                'load': {'weight':20, 'guard':'h', 'label': 'load', "dependency": {'h_load':['h']}, 'type': 'collaborative'},
-                'h_load': {'weight':20, 'guard':'h', 'label': 'h_load', "dependency": {}, 'type': 'assisting'},
-                'manipulate': {'weight':15, 'guard':'m1 || m2 || m3 || m4', 'label': 'manipluate', "dependency": {}, 'type': 'local'},
-                'deliver': {'weight':30, 'guard':'d', 'label': 'deliver', "dependency": {}, 'type': 'local'},
-                'harvest': {'weight':40, 'guard':'h', 'label': 'harvest', "dependency": {}, 'type': 'local'},
+                'load': {'weight':8, 'guard':'h', 'label': 'load', "dependency": {'h_load':['h']}, 'type': 'collaborative'},
+                'h_load': {'weight':8, 'guard':'h', 'label': 'h_load', "dependency": {}, 'type': 'assisting'},
+                'manipulate': {'weight':7, 'guard':'m1 || m2 || m3 || m4', 'label': 'manipulate', "dependency": {}, 'type': 'local'},
+                'deliver': {'weight':6, 'guard':'d', 'label': 'deliver', "dependency": {}, 'type': 'local'},
+                'harvest': {'weight':15, 'guard':'h', 'label': 'harvest', "dependency": {}, 'type': 'local'},
                 'free' : {"weight":1, "guard":'1', "label": 'none', "dependency":{}, "type": 'local'}        
             }
         }
@@ -137,9 +137,9 @@ def output_standard(file_name, robot_type, mesurement_type):
             'type': 'ActionModel',
             'initial':'free', #free=none
             'actions':{
-                'check_connection': {'weight':30, 'guard':'c1 || c3', 'label': 'check_connection', "dependency": {'h_check_connection':['c2', 'c4']}, 'type': 'collaborative'},
-                'h_check_connection': {'weight':25, 'guard':'c2 || c4', 'label': 'h_check_connection', "dependency": {}, 'type': 'assisting'},
-                'patrol': {'weight':20, 'guard':'p1 || p2 || p3 || p4', 'label': 'patrol', "dependency": {}, 'type': 'local'},
+                'check_connection': {'weight':7, 'guard':'c1 || c3', 'label': 'check_connection', "dependency": {'h_check_connection':['c2', 'c4']}, 'type': 'collaborative'},
+                'h_check_connection': {'weight':5, 'guard':'c2 || c4', 'label': 'h_check_connection', "dependency": {}, 'type': 'assisting'},
+                'patrol': {'weight':6, 'guard':'p1 || p2 || p3 || p4', 'label': 'patrol', "dependency": {}, 'type': 'local'},
                 'free' : {"weight":1, "guard":'1', "label": 'none', "dependency":{}, "type": 'local'}        
             }
         }

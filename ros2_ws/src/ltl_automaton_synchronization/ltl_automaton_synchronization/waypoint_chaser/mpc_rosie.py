@@ -17,9 +17,9 @@ class MPC_Rosie():
         
         # Arena limits 
         self.arena_x_max = 1.877 - self.rob_diam/2.
-        self.arena_x_min = -2.290 - self.rob_diam/2.
+        self.arena_x_min = -2.290 + self.rob_diam/2.
         self.arena_y_max = 2.300 - self.rob_diam/2.
-        self.arena_y_min = -2.869 - self.rob_diam/2.
+        self.arena_y_min = -2.869 + self.rob_diam/2.
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([
@@ -80,7 +80,7 @@ class MPC_Rosie():
         # cost function weights for difference in state
         self.Q = np.array([[5.0, 0.0, 0.0],[0.0, 5.0, 0.0],[0.0, 0.0, 0.0]])
         # cost function weights for difference in control
-        self.R = np.array([[0.5, 0.0, 0.0], [0.0, 0.5, 0.0], [0.0, 0.0, 0.5]])
+        self.R = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
              
         # initialize the cost function
         self.obj = 0
