@@ -19,7 +19,7 @@ def generate_launch_description():
                 {'agents': agents},
                 {'dynamic_obstacles': dynamic_obstacles},
                 {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config', 'obstacles.yaml')},                
-                {'is_simulation': True},
+                {'is_simulation': False},
             ]
         )   
     

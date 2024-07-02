@@ -17,7 +17,7 @@ activity_markers = {'assisting': 's', 'local': 'o', 'collaborative': 'd'}
 collab_marker = '*'
 
 fig, ax = plt.subplots(figsize=(16, 9))
-plot_limit= 350
+plot_limit= 300
 # Plotting the data
 for i, agent in enumerate(agents):
     agent_data = data[agent]
@@ -38,19 +38,19 @@ for i, agent in enumerate(agents):
                 ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
                 # Add action name above the line
                 if actions[j].startswith('manipulate'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'man$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'man$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('h_check_connection'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'h_c_c$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'h_c_c$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('check_connection'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'c_c$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'c_c$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('patrol'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'pat$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'pat$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('harvest'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'har$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'har$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('deliver'):
-                    ax.text((start_time + end_time) / 2, i -0.15, f'del$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15) 
+                    ax.text((start_time + end_time) / 2, i -0.15, f'del$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 else:
-                    ax.text((start_time + end_time) / 2, i -0.15, f'{actions[j]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+                    ax.text((start_time + end_time) / 2, i -0.15, f'{actions[j]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
             elif actions[j].startswith('goto'):
                 last_region = actions[j].split('_')[-1]
     # Plot the last action that ends with the plot range end
@@ -64,7 +64,7 @@ for i, agent in enumerate(agents):
             ax.hlines(i, start_time, end_time, colors=color, linewidth=2.5)
             ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
             # Add action name above the line
-            ax.text((start_time + end_time) / 2, i -0.15, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=15)
+            ax.text((start_time + end_time) / 2, i -0.15, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
             
     # Plot collaboration start times
     ax.scatter(collab_start, [i] * len(collab_start), color='black', marker=collab_marker, s=200,zorder=3)
