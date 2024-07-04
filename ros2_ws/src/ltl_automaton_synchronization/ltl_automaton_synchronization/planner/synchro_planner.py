@@ -24,6 +24,7 @@ class sync_LTLPlanner(LTLPlanner):
         self.last_weight = 0
         self.start_last_move = 0
         # cooperative actions
+        
     def cooperative_action_in_horizon(self, horizon, prev_received_timestamp, chose_ROI):
         actual_time = self.ros_node.get_clock().now().to_msg()
         last_action_elapsed_time = round(((actual_time.sec + actual_time.nanosec/1e9)- (prev_received_timestamp.sec + prev_received_timestamp.nanosec/1e9)), 2)

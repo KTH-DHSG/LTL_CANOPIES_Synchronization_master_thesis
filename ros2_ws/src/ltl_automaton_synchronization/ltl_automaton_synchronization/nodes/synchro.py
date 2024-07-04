@@ -129,14 +129,26 @@ class SynchroPlanner(MainPlanner):
         
     #IMPORTANTD: this function must be adapted for each simulation
     # returns just the first region for simplicity for now
-    def chose_ROI(self, dependency):
+    
+    # for thesis
+    ''' 
+     def chose_ROI(self, dependency):
         if self.agent_name == '/turtlebot1':
             return dependency[1][1]
         if self.agent_name == '/turtlebot2':
             return dependency[1][0]
         
-        return dependency[1][0]  
+        return dependency[1][0]   
+    '''
+  
+    # for paper
+    def chose_ROI(self, dependency):
+        if self.agent_name == '/turtlebot5':
+            return dependency[1][1]
+        if self.agent_name == '/turtlebot7':
+            return dependency[1][0]
         
+        return dependency[1][0]   
 
     def set_initial_state(self):        
         # if None then the initial state will be taken direcly from the dictionaries
@@ -172,6 +184,8 @@ class SynchroPlanner(MainPlanner):
         # I'm not processing another request
         if not self.current_request: 
             self.get_logger().info('Synchro Planner: Processing Collaboration Request Form Agent: %s' %agent)    
+            message= 'agent '+str(agent)
+            self.get_logger().info(f"\033[34m{message}\033[0m")
             self.current_request = request            
             reply = self.ltl_planner.evaluate_request(request)
             reply_msg = self.build_reply_msg(reply)
