@@ -263,12 +263,14 @@ class SynchroActions(Node):
             # MPC object based on the robot we are using
             if self.get_namespace().startswith('/turtlebot'):
                 mpc = MPC_Turtlebot(x_0, x_t, obstacles)
+                reduction=0.5
             else:
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
+                reduction=0.6
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
             print(x_0)
-            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>0.7*radius:            
+            while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>reduction*radius:            
                 
 
                 time_init=self.get_clock().now().to_msg()
@@ -285,7 +287,7 @@ class SynchroActions(Node):
                 time_end=self.get_clock().now().to_msg()
                 time_end=time_end.sec+time_end.nanosec*1e-9
                 self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
-                #print('control: ', control)
+                self.get_logger().info('control: %s' %control)
                 '''
                 # used for rviz
                 path_msg = Path()
@@ -303,7 +305,6 @@ class SynchroActions(Node):
                 
                 # publish control
                 self.publish_vel_control(control)
-
 
             # stop the robot at the end
             if self.get_namespace().startswith('/turtlebot'):

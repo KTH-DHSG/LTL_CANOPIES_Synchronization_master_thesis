@@ -12,14 +12,20 @@ class MPC_Turtlebot():
 
         # Turtlebot dimention and specifications
         self.rob_diam = 0.22 # [m] #actual max dimension is 0.178
-        self.v_max = 0.2 # [m/s]
-        self.omega_max = 1.3 # [rad/s]
+        self.v_max = 0.15 # [m/s]
+        self.omega_max = 0.5 # [rad/s]
         
-        # Arena limits 
-        self.arena_x_max = 1.877 - self.rob_diam/2.
-        self.arena_x_min = -2.290 + self.rob_diam/2.
-        self.arena_y_max = 2.300 - self.rob_diam/2.
-        self.arena_y_min = -2.869 + self.rob_diam/2.
+        # Arena limits thesis
+        #self.arena_x_max = 1.877 - self.rob_diam/2.
+        #self.arena_x_min = -2.290 + self.rob_diam/2.
+        #self.arena_y_max = 2.300 - self.rob_diam/2.
+        #self.arena_y_min = -2.869 + self.rob_diam/2.
+        
+        # Arena limits thesis paper
+        self.arena_x_max = 1.881 - self.rob_diam/2.
+        self.arena_x_min = -2.367 + self.rob_diam/2.
+        self.arena_y_max = 2.315 - self.rob_diam/2.
+        self.arena_y_min = -2.906 + self.rob_diam/2.  
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([

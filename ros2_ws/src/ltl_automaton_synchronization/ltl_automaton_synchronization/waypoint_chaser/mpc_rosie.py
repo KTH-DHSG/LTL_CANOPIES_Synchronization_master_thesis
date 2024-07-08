@@ -15,11 +15,18 @@ class MPC_Rosie():
         self.v_max = 0.2 
         self.omega_max = 2 # [rad/s]
         
-        # Arena limits 
-        self.arena_x_max = 1.877 - self.rob_diam/2.
-        self.arena_x_min = -2.290 + self.rob_diam/2.
-        self.arena_y_max = 2.300 - self.rob_diam/2.
-        self.arena_y_min = -2.869 + self.rob_diam/2.
+        # Arena limits thesis
+        #self.arena_x_max = 1.877 - self.rob_diam/2.
+        #self.arena_x_min = -2.290 + self.rob_diam/2.
+        #self.arena_y_max = 2.300 - self.rob_diam/2.
+        #self.arena_y_min = -2.869 + self.rob_diam/2.
+        
+        # Arena limits thesis paper
+        self.arena_x_max = 1.881 - self.rob_diam/2.
+        self.arena_x_min = -2.367 + self.rob_diam/2.
+        self.arena_y_max = 2.315 - self.rob_diam/2.
+        self.arena_y_min = -2.906 + self.rob_diam/2.       
+        
 
         # Casadi variables for states
         self.states = ca_tools.struct_symSX([

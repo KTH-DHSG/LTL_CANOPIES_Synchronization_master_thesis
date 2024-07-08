@@ -19,7 +19,7 @@ def generate_launch_description():
                 {'agents': agents},
                 {'dynamic_obstacles': dynamic_obstacles},
                 {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'obstacles.yaml')},                
-                {'is_simulation': True},
+                {'is_simulation': False},
             ]
         )   
     
@@ -32,7 +32,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (p1 && <> (p2 && <> (p3 && <> (p4 && <> (p5 && <> (p6 && <> (p7 && <> (p8 && <> (p9 && <> (p10 && <> (p11 && <> (p12 && <> (p13 && <> (p14))))))))))))))' },
+                {'hard_task':'[]<> (patrol && p1 && <> (patrol && p13))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'turtlebot1.yaml')},
