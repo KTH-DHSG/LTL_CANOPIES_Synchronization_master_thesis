@@ -12,7 +12,7 @@ declare -a commands=(
     "ros2 launch synchronization_experiments  rosie_1_p.py"
     "ros2 launch synchronization_experiments  turtlebot_5_p.py"
     "ros2 launch synchronization_experiments  turtlebot_6_p.py"
-    "ros2 launch synchronization_experiments  turtlebot_7_p.py"
+    #"ros2 launch synchronization_experiments  turtlebot_7_p.py"
 )
 # Loop through the commands and open each in a new terminal window
 for cmd in "${commands[@]}"

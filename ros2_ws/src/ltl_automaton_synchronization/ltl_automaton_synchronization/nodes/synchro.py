@@ -143,9 +143,9 @@ class SynchroPlanner(MainPlanner):
   
     # for paper
     def chose_ROI(self, dependency):
-        if self.agent_name == '/turtlebot5':
+        if self.agent_name == '/turtlebot4':
             return dependency[1][1]
-        if self.agent_name == '/turtlebot7':
+        if self.agent_name == '/turtlebot6':
             return dependency[1][0]
         
         return dependency[1][0]   

@@ -1,5 +1,5 @@
 motion:
-  initial: p3
+  initial: m
   type: MotionTS
   regions:
     p1:

@@ -1,5 +1,5 @@
 motion:
-  initial: p14
+  initial: p3
   type: MotionTS
   regions:
     p1:
@@ -561,8 +561,6 @@ action:
       label: group
       dependency:
         h_group_1:
-        - g
-        h_group_2:
         - g
       type: collaborative
     remove_object:

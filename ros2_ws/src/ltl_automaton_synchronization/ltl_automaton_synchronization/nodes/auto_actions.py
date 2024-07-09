@@ -69,6 +69,9 @@ class SynchroActions(Node):
         self.start_assising_flag = False
         # flag to understand if we are in a simulation or in areal experiment
         self.is_simulation = self.declare_parameter('is_simulation', True).value
+        
+        # flag to confirm that the agent has a valid pose
+        self.pose_flag = False
     
     def build_automaton(self):
         
@@ -269,6 +272,9 @@ class SynchroActions(Node):
                 reduction=0.6
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
+            
+            while not self.pose_flag:
+                pass
             print(x_0)
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>reduction*radius:            
                 
@@ -278,6 +284,7 @@ class SynchroActions(Node):
                 # update obstacles
                 mpc.obstacles = self.list_obstacles()
                 #update pose
+                
                 mpc.x_0 = self.current_pose
                 #print('obstacles: ', mpc.obstacles)
                 #print('x_0: ', mpc.x_0)
@@ -371,7 +378,7 @@ class SynchroActions(Node):
     def update_pose_callback(self, msg):
         if(not math.isnan(msg.pose.position.x)):
             self.current_pose = np.array([msg.pose.position.x, msg.pose.position.y, np.unwrap([2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)])[0]]).reshape(3, 1)  
-
+            self.pose_flag = True
 
 
 
