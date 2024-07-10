@@ -32,7 +32,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (patrol && p4 && <> (patrol && p7))' },
+                {'hard_task':'X wait && []<> (patrol && p4 && <> (patrol && p7))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'turtlebot3.yaml')},

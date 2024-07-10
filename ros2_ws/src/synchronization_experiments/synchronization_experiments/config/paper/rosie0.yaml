@@ -176,3 +176,9 @@ action:
       label: none
       dependency: {}
       type: local
+    wait:
+      weight: 60
+      guard: '1'
+      label: wait
+      dependency: {}
+      type: local

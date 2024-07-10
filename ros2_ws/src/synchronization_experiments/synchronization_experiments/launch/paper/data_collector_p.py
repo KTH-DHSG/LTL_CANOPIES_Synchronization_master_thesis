@@ -21,7 +21,7 @@ def generate_launch_description():
             {'agents_types': agents_types},
             {'possible_agent_types': possible_agent_types},
             {'motion_action_dictionary_paths': [os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie0.yaml'),
-                os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'turtlebot1.yaml')            
+                os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'turtlebot6.yaml')            
             ]}            
         ]
     )  

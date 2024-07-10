@@ -32,7 +32,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (harvest && h2 && <> (harvest && h4 && <> deliver))' },
+                {'hard_task':'X wait && []<> (harvest && h2 && <> (harvest && h4 && <> deliver))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie2.yaml')},

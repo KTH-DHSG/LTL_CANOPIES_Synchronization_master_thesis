@@ -17,7 +17,7 @@ activity_markers = {'assisting': 's', 'local': 'o', 'collaborative': 'd'}
 collab_marker = '*'
 
 fig, ax = plt.subplots(figsize=(16, 9))
-plot_limit= 120
+plot_limit= 450
 # Plotting the data
 for i, agent in enumerate(agents):
     agent_data = data[agent]

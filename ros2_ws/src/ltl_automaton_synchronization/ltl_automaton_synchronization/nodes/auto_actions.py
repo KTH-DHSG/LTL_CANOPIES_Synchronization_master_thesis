@@ -148,9 +148,9 @@ class SynchroActions(Node):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
-        print("action_label: ", action_label)
-        print("current_state: ", self.current_state)
-        print("next_state: ", next_state)
+        #print("action_label: ", action_label)
+        #print("current_state: ", self.current_state)
+        #print("next_state: ", next_state)
         # getting action key
         action_key = self.key_given_label(action_label)
         # check the type of action 
@@ -266,16 +266,16 @@ class SynchroActions(Node):
             # MPC object based on the robot we are using
             if self.get_namespace().startswith('/turtlebot'):
                 mpc = MPC_Turtlebot(x_0, x_t, obstacles)
-                reduction=0.5
+                reduction=0.6
             else:
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
-                reduction=0.6
+                reduction=0.7
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
             
             while not self.pose_flag:
                 pass
-            print(x_0)
+            self.get_logger().warn('ACTION NODE: Starting MPC')
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>reduction*radius:            
                 
 
@@ -293,31 +293,19 @@ class SynchroActions(Node):
                 control, path = mpc.get_next_control()                
                 time_end=self.get_clock().now().to_msg()
                 time_end=time_end.sec+time_end.nanosec*1e-9
-                self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
-                self.get_logger().info('control: %s' %control)
-                '''
-                # used for rviz
-                path_msg = Path()
-                path_msg.header.stamp = self.get_clock().now().to_msg()
-                path_msg.header.frame_id = 'map'
-                for i in range(path.shape[1]):
-                    pose = PoseStamped()
-                    pose.pose.position = Point(x=path[0][i], y=path[1][i], z=0.0)
-                    pose.pose.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
-                    path_msg.poses.append(pose)
-                
-                self.path_pub.publish(path_msg)
-
-                '''
-                
+                #self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
+                #self.get_logger().info('control: %s' %control)
+                #self.get_logger().info('control: %s' %self.current_pose)
+                                
                 # publish control
                 self.publish_vel_control(control)
-
+            self.get_logger().warn('ACTION NODE: MPC ended')  
             # stop the robot at the end
             if self.get_namespace().startswith('/turtlebot'):
                 self.publish_vel_control([0.0, 0.0])
             else:
-                self.publish_vel_control([0.0, 0.0, 0.0])   
+                self.publish_vel_control([0.0, 0.0, 0.0])
+
         else:
             start_time=self.get_clock().now().to_msg().sec
             while(self.get_clock().now().to_msg().sec-start_time<weight):
