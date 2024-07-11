@@ -177,7 +177,7 @@ action:
       dependency: {}
       type: local
     wait:
-      weight: 60
+      weight: 40
       guard: '1'
       label: wait
       dependency: {}

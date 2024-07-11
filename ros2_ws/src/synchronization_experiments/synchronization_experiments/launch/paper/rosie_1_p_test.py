@@ -11,7 +11,7 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='auto_actions',
             name='auto_actions',
-            namespace='rosie1',
+            namespace='rosie2',
             emulate_tty=True,
             output='screen',
             parameters=[
@@ -28,11 +28,11 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='synchro',
             name='ltl_synchro_planner',
-            namespace='rosie1',
+            namespace='rosie2',
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (manipulate && m && <> (supervise && s && <> l))' },
+                {'hard_task':'[]<> (manipulate && m && <> (h4 && <> (l && <> h1)))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie1.yaml')},

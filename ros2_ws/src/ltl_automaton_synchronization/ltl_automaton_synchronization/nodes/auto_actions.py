@@ -126,6 +126,7 @@ class SynchroActions(Node):
         self.finish_collab_srv = self.create_client(FinishCollab, "finished_collab", callback_group=client_cb_group)
 
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.publish_vel_control([0.0, 0.0, 0.0])
         
         self.path_pub = self.create_publisher(Path, 'path', 10)
         
@@ -269,7 +270,7 @@ class SynchroActions(Node):
                 reduction=0.6
             else:
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
-                reduction=0.7
+                reduction=0.65
             # looping until i'm inside the region but with a smaller radius
             #TODOD: clean the code
             
