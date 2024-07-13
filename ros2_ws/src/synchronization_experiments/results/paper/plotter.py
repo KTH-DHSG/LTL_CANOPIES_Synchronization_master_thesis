@@ -6,10 +6,10 @@ file_path = '/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_w
 # Open the pickle file and load the data
 with open(file_path, 'rb') as file:
     data = pickle.load(file)
-print(data)
+#print(data)
 
 #added by hand because it is easier to do
-initial_regions = ['H1', 'M','H2', 'P1', 'P2', 'P4', 'P6', 'P14', 'P3', 'M' ]
+initial_regions = ['H1', 'M','H2', 'P1', 'P2', 'P4', 'P12', 'P3', 'M', 'M' ]
 # Assuming data is a dictionary with agent names as keys and AgentData as values
 agents = list(data.keys())
 activity_colors = {'assisting': 'red', 'local': 'blue', 'collaborative': 'green'}
@@ -33,38 +33,36 @@ for i, agent in enumerate(agents):
         color = activity_colors[action]
         marker = activity_markers[action]
         if start_time <= plot_limit:
-            if not (actions[j].startswith('goto') or actions[j].startswith('none')):
-                ax.hlines(i, start_time, end_time, colors=color, linewidth=2.5)
-                ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
+            if not (actions[j].startswith('goto') or actions[j].startswith('none') or actions[j].startswith('wait')):
+                ax.hlines(i, start_time-20, end_time-20, colors=color, linewidth=2.5)
+                ax.scatter([start_time-20, end_time-20], [i, i], color=color, marker=marker)
                 # Add action name above the line
                 if actions[j].startswith('manipulate'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'm$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'm$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('h_check_connection'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'hcc$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'hcc$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('check_connection'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'cc$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'cc$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('patrol'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'p$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'p$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('harvest'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'h$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'h$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
                 elif actions[j].startswith('deliver'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'd$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'd$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('h_remove_object'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'hro$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'hro$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('supervise'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f's$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f's$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('remove_object'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'ro$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'ro$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('group'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'g$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
-                elif actions[j].startswith('h_group_1'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'hg1$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
-                elif actions[j].startswith('h_group_2'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'hg2$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'g$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                elif actions[j].startswith('h_group'):
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'hg$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('load'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'l$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'l$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 elif actions[j].startswith('h_load'):
-                    ax.text((start_time + end_time) / 2, i -0.25, f'h_l$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
+                    ax.text((start_time + end_time-40) / 2, i -0.25, f'h_l$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16) 
                 else:
                     ax.text((start_time + end_time) / 2, i -0.25, f'{actions[j]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
             elif actions[j].startswith('goto'):
@@ -80,13 +78,16 @@ for i, agent in enumerate(agents):
         action = action_types[-1]
         color = activity_colors[action]
         marker = activity_markers[action]
-        if not (actions[j].startswith('goto') or actions[j].startswith('none')):
-            ax.hlines(i, start_time, end_time, colors=color, linewidth=2.5)
-            ax.scatter([start_time, end_time], [i, i], color=color, marker=marker)
+        if not (actions[j].startswith('goto') or actions[j].startswith('none') or actions[j].startswith('wait')):
+            ax.hlines(i, start_time-20, end_time-20, colors=color, linewidth=2.5)
+            ax.scatter([start_time-20, end_time-20], [i, i], color=color, marker=marker)
             # Add action name above the line
-            ax.text((start_time + end_time) / 2, i -0.25, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
+            ax.text((start_time + -40) / 2, i -0.25, f'{actions[-1]}$_{{{last_region}}}$', ha='center', va='bottom', fontsize=16)
             
     # Plot collaboration start times
+    #print(collab_start)
+    for j in range(len(collab_start)):
+        collab_start[j] += -20
     ax.scatter(collab_start, [i] * len(collab_start), color='black', marker=collab_marker, s=200,zorder=3)
 
 # Create a custom legend

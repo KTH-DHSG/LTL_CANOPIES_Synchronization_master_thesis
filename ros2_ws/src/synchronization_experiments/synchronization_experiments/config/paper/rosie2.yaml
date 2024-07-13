@@ -1,5 +1,5 @@
 motion:
-  initial: h1
+  initial: h2
   type: MotionTS
   regions:
     h1:
@@ -171,7 +171,7 @@ action:
       dependency: {}
       type: local
     wait:
-      weight: 20
+      weight: 30
       guard: '1'
       label: wait
       dependency: {}

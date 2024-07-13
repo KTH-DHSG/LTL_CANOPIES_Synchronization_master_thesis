@@ -1,5 +1,5 @@
 motion:
-  initial: p1
+  initial: m
   type: MotionTS
   regions:
     p1:
@@ -205,7 +205,7 @@ motion:
     p9:
       label: p9
       pose:
-      - 0.488
+      - -0.488
       - -2.587
       - 0.19
       weights:
@@ -404,7 +404,7 @@ motion:
       - 26.767795742064546
     g:
       label: g
-      pose: &id001
+      pose:
       - -0.142
       - -1.679
       - 0.44
@@ -429,7 +429,10 @@ motion:
       - 14.540794720754127
     m:
       label: m
-      pose: *id001
+      pose:
+      - 1.249
+      - 0.001
+      - 0.59
       weights:
       - 17.29264069545835
       - 12.957285380991053
@@ -459,8 +462,8 @@ action:
       label: check_connection
       dependency:
         h_check_connection:
-        - c2
         - c4
+        - c3
       type: collaborative
     group:
       weight: 4
@@ -497,7 +500,7 @@ action:
       dependency: {}
       type: local
     wait:
-      weight: 20
+      weight: 30
       guard: '1'
       label: wait
       dependency: {}

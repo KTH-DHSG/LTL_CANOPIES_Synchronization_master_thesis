@@ -6,7 +6,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     agents = ['/rosie0','/rosie1', '/rosie2','/turtlebot1', '/turtlebot2', '/turtlebot3', '/turtlebot4', '/turtlebot5', '/turtlebot6', '/turtlebot7']
-    dynamic_obstacles = ['/rosie0']
+    dynamic_obstacles = ['/rosie1']
     action_node= Node(
             package='ltl_automaton_synchronization',
             executable='auto_actions',
@@ -32,7 +32,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (manipulate && m && <> (h4 && <> (l && <> h1)))' },
+                {'hard_task':'[]<> (h2 && <> (h4 && <> (l && <> s)))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie1.yaml')},
