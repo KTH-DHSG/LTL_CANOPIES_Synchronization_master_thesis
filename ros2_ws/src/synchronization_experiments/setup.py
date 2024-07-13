@@ -15,7 +15,7 @@ setup(
         (os.path.join('share', package_name, 'launch/thesis'), glob('synchronization_experiments/launch/thesis/*')),
         (os.path.join('share', package_name, 'launch/paper'), glob('synchronization_experiments/launch/paper/*')),
         (os.path.join('share', package_name, 'config/thesis'), glob('synchronization_experiments/config/thesis/*')),
-        (os.path.join('share', package_name, 'config/paper'), glob('synchronization_experiments/config/paper/*')),
+        (os.path.join('share', package_name, 'config/paper'), glob('synchronization_experiments/config/paper/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

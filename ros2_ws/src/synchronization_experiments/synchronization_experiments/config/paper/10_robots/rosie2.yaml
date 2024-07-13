@@ -1,5 +1,5 @@
 motion:
-  initial: h1
+  initial: h2
   type: MotionTS
   regions:
     h1:
@@ -97,7 +97,7 @@ motion:
       pose:
       - -1.205
       - 0.819
-      - 0.6
+      - 0.63
       weights:
       - 5.635002218278179
       - 5.490978965539752
@@ -141,7 +141,7 @@ action:
       dependency: {}
       type: assisting
     h_remove_object:
-      weight: 60
+      weight: 15
       guard: m
       label: h_remove_object
       dependency: {}
@@ -170,15 +170,15 @@ action:
       label: supervise
       dependency: {}
       type: local
-    wait:
-      weight: 20
-      guard: '1'
-      label: wait
-      dependency: {}
-      type: local
     free:
       weight: 1
       guard: '1'
       label: none
+      dependency: {}
+      type: local
+    wait:
+      weight: 40
+      guard: '1'
+      label: wait
       dependency: {}
       type: local
