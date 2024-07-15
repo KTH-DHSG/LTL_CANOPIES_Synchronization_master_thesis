@@ -1,0 +1,10 @@
+string[] ids
+geometry_msgs/Pose[] aruco_poses
+geometry_msgs/Pose pickupspot_pose
+geometry_msgs/Pose goalbase_pose
+---
+bool success
+int32 error_code
+int32 OBJECT_NOT_FOUND = 0
+---
+bool filler

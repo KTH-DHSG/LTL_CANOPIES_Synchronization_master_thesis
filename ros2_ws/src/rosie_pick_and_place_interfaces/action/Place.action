@@ -1,0 +1,19 @@
+# descripiton of both objects
+string[] active_ids
+geometry_msgs/Pose[] active_aruco_poses
+string[] passive_ids
+geometry_msgs/Pose[] passive_aruco_poses
+# this information must be here
+geometry_msgs/Pose goalactive_passiveframe_preplace
+geometry_msgs/Pose goalactive_passiveframe_place
+#
+geometry_msgs/Point preplace_position_tolerance
+geometry_msgs/Point preplace_orientation_tolerance
+geometry_msgs/Point place_position_tolerance
+geometry_msgs/Point place_orientation_tolerance
+# this information is optional
+geometry_msgs/Pose[] active_passiveframe_current
+---
+bool success
+---
+bool filler

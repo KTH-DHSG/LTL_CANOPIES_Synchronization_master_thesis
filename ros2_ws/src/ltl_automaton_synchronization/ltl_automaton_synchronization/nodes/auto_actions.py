@@ -16,6 +16,15 @@ from ltl_automaton_synchronization.waypoint_chaser.mpc_rosie import MPC_Rosie
 import numpy as np
 import math
 
+from rclpy.action import ActionClient
+from rosie_pick_and_place_interfaces.action import Pick  # Adjust the import based on your package name
+from geometry_msgs.msg import Pose, Point
+from geometry_msgs.msg import Quaternion
+from scipy.spatial.transform import Rotation
+from std_srvs.srv import Trigger
+
+
+
 class SynchroActions(Node):
     def __init__(self):
         super().__init__('action_node')
@@ -67,11 +76,17 @@ class SynchroActions(Node):
         self.agents_ready = 0
         # flag to indicate I can start the assisitve action
         self.start_assising_flag = False
-        # flag to understand if we are in a simulation or in areal experiment
+        # flag to understand if we are in a simulation or in a real experiment
         self.is_simulation = self.declare_parameter('is_simulation', True).value
+        
+        # flag to understand if we need to do the manipulation
+        self.execute_manipulation = self.declare_parameter('execute_manipulation', False).value
         
         # flag to confirm that the agent has a valid pose
         self.pose_flag = False
+        
+        # flag used to check if the pick action has been completed
+        self.done_place = False
     
     def build_automaton(self):
         
@@ -128,7 +143,10 @@ class SynchroActions(Node):
         self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
         self.publish_vel_control([0.0, 0.0, 0.0])
         
-        self.path_pub = self.create_publisher(Path, 'path', 10)
+        if self.agent=='/rosie1':
+            self.pick_action_client = ActionClient(self, Pick, "/rosie1/pick_action")
+            self.place_service = self.create_client(Trigger, "/rosie1/davide_service")
+        
         
 
         # MOCAP subscribers
@@ -165,7 +183,7 @@ class SynchroActions(Node):
             self.collaborative_agents = {'master':'', 'assisting_agents':[]}                
         else:
             # assistive action start assisting protocol
-            self.start_assising(self.collaborative_agents['master'], weight)
+            self.start_assising(self.collaborative_agents['master'], action_key, weight)
             # updating collaborative agents dictionary
             self.collaborative_agents = {'master':'', 'assisting_agents':[]}
         
@@ -213,21 +231,38 @@ class SynchroActions(Node):
             pass
     
     
-    def start_assising(self, master, weight):
+    def start_assising(self, master, action_key, weight):
         self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
         #send ready to master
-        self.synchro_ready_pubs[master].publish(String(data=self.agent))
+        #self.synchro_ready_pubs[master].publish(String(data=self.agent))
 
-        # wait until a confirmation is given by the master
-        while not self.start_assising_flag:
-            pass
+        # wait until a confirmation is given by the master      
+        #while not self.start_assising_flag:
+            #pass
         # resetting the flag
         self.start_assising_flag = False
         
         # executing the action, we just wait for now
-        start_time=self.get_clock().now().to_msg().sec
-        while(self.get_clock().now().to_msg().sec-start_time<weight):
-            pass
+        if self.execute_manipulation and action_key=='h_remove_object':
+            self.get_logger().warn('ACTION NODE: Starting Picking')
+            #call the service to remove the object
+            self._send_goal()
+            while not self.done_pick:
+                pass
+            self.done_pick = False          
+
+            self.place_service.wait_for_service()
+            self.get_logger().warn('ACTION NODE: Starting Placing')
+            self.req = Trigger.Request()
+            self.future = self.place_service.call_async(self.req)
+            self.future.add_done_callback(self.place_callback)
+            while not self.done_place:
+                pass
+            self.done_place = False                        
+        else:
+            start_time=self.get_clock().now().to_msg().sec
+            while(self.get_clock().now().to_msg().sec-start_time<weight):
+                pass
         
     
     
@@ -284,12 +319,8 @@ class SynchroActions(Node):
                 time_init=time_init.sec+time_init.nanosec*1e-9
                 # update obstacles
                 mpc.obstacles = self.list_obstacles()
-                #update pose
-                
-                mpc.x_0 = self.current_pose
-                #print('obstacles: ', mpc.obstacles)
-                #print('x_0: ', mpc.x_0)
-                
+                #update pose                
+                mpc.x_0 = self.current_pose                
                 # mpc iteration
                 control, path = mpc.get_next_control()                
                 time_end=self.get_clock().now().to_msg()
@@ -368,6 +399,86 @@ class SynchroActions(Node):
         if(not math.isnan(msg.pose.position.x)):
             self.current_pose = np.array([msg.pose.position.x, msg.pose.position.y, np.unwrap([2*np.arctan2(msg.pose.orientation.z, msg.pose.orientation.w)])[0]]).reshape(3, 1)  
             self.pose_flag = True
+
+
+#==============================
+#          Remove Object
+#==============================
+
+    def _send_goal(self):
+        goal_msg = Pick.Goal()
+        # goal_msg.order = 10  # Example goal value
+
+        ## Populate goal message
+        goal_msg.ids = ['4']
+        # --
+        pose1 = Pose()
+        pose1.position.x = 0.0
+        pose1.position.y = 0.0
+        pose1.position.z = 0.0
+        pose1.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
+        goal_msg.aruco_poses = [pose1]
+        # --
+        
+        # define the pregrasp and grasp poses
+        quat = Rotation.from_euler("xyz", [180., 0., 90.], degrees=True).as_quat()
+        # Create a Quaternion message
+        quaternion_msg = Quaternion()
+        quaternion_msg.x = quat[0]
+        quaternion_msg.y = quat[1]
+        quaternion_msg.z = quat[2]
+        quaternion_msg.w = quat[3]
+        goal_msg.pregrasp_pose = Pose(
+            position=Point(x=0., y=0.02, z=0.12),
+            orientation=quaternion_msg
+        )
+        
+        goal_msg.grasp_pose = Pose(
+            position=Point(x=0., y=0.02, z=0.065),
+            orientation=quaternion_msg
+        )
+
+        # --
+        goal_msg.pregrasp_position_tolerance = Point(x=0.01, y=0.01, z=0.01)
+        goal_msg.pregrasp_orientation_tolerance = Point(x=5., y=5., z=5.)
+        goal_msg.grasp_position_tolerance = Point(x=0.02, y=0.02, z=0.02)
+        goal_msg.grasp_orientation_tolerance = Point(x=5., y=5., z=5.)
+        ##
+        self.pick_action_client.wait_for_server()
+        self._send_goal_future = self.pick_action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
+        self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected :(')
+            return
+
+        self.get_logger().info('Goal accepted :)')
+
+        self._get_result_future = goal_handle.get_result_async()
+        self._get_result_future.add_done_callback(self.get_result_callback)
+
+    def get_result_callback(self, future):
+        result = future.result().result
+        self.get_logger().info(f'Success: {result.success}')
+        self.done_pick = True
+
+    def feedback_callback(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        self.get_logger().info(f'Received feedback: {feedback.filler}')
+
+    def place_callback(self, future):
+        result = future.result()
+        if result is not None:
+            self.get_logger().info('Result of place: {0}'.format(result.message))
+        else:
+            self.get_logger().info('Exception while calling service: {0}'.format(future.exception()))
+        # Set the flag to True to indicate that the place action has been completed
+        self.done_place = True
+
+
+
 
 
 

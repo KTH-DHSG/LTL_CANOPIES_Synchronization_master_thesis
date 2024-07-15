@@ -11,7 +11,7 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='auto_actions',
             name='auto_actions',
-            namespace='rosie2',
+            namespace='rosie1',
             emulate_tty=True,
             output='screen',
             parameters=[
@@ -20,6 +20,7 @@ def generate_launch_description():
                 {'dynamic_obstacles': dynamic_obstacles},
                 {'obstacles_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'obstacles.yaml')},                
                 {'is_simulation': False},
+                {'execute_manipulation': True}
             ]
         )   
     
@@ -28,11 +29,12 @@ def generate_launch_description():
             package='ltl_automaton_synchronization',
             executable='synchro',
             name='ltl_synchro_planner',
-            namespace='rosie2',
+            namespace='rosie1',
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'[]<> (h2 && <> (h4 && <> (l && <> s)))' },
+                #{'hard_task':'[]<> (h2 && <> (h4 && <> (l && <> s)))' },
+                {'hard_task':'<> h_remove_object' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie1.yaml')},
