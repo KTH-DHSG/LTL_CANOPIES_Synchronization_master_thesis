@@ -6,9 +6,9 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     nodes = [] 
-    num_agents = 200
-    num_ass_actions = 4
-    filter = False   
+    num_agents = 100
+    num_ass_actions = 1
+    filter = True   
     for i in range(num_agents):
         node= Node(
             package='synchronization_experiments',

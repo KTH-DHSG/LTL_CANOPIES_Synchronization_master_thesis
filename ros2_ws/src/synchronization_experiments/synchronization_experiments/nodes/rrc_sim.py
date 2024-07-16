@@ -12,7 +12,7 @@ class RRC(Node):
         super().__init__('rrc')
         self.init_params()
         self.setup_pub_sub()
-        self.get_logger().info(self.get_namespace() + ' is ready')
+        #self.get_logger().info(self.get_namespace() + ' is ready')
         if self.get_namespace()=='/agent0':
             time=self.get_clock().now().to_msg().sec
             flag=True
@@ -79,7 +79,7 @@ class RRC(Node):
             self.reply_sub = self.create_subscription(SynchroReply, 'synchro_reply', self.reply_callback, self.qos_profile_reply, callback_group=cb_group)
            
         # creating a confirm publisher
-        self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
+        #self.confirm_pub = self.create_publisher(SynchroConfirm, '/synchro_confirm', self.qos_profile)
         
         # creating a confirm subscirber
         #self.confirm_sub = self.create_subscription(SynchroConfirm, '/synchro_confirm', self.confirm_callback, self.qos_profile)
@@ -184,7 +184,12 @@ class RRC(Node):
                     filtered_replies = self.replies
                 # getting the confirmation
                 self.agents_involved = len(filtered_replies)
+                curtime=self.get_clock().now().to_msg()
+                curtime=curtime.sec+curtime.nanosec*1e-9
+                print(curtime-self.mid_time)
                 confirm, time = self.mip(self.current_request, filtered_replies)
+                print(confirm)
+                print(filtered_replies)
             # if no solution exists then we return None
             else:
                 confirm, time = None, None
@@ -198,8 +203,9 @@ class RRC(Node):
             self.get_logger().warn("Agents in the MIP: "+str(self.agents_involved))
             self.get_logger().warn("RRC time: "+str(self.end_time-self.start_time))
             self.get_logger().warn("Filter and MIP time: "+str(self.end_time-self.mid_time))
+            self.get_logger().warn("Filtering time: "+str(self.end_time-self.mid_time))
             self.get_logger().info(str(confirm_msg))
-            self.confirm_pub.publish(confirm_msg)    
+            #self.confirm_pub.publish(confirm_msg)    
     
     def unpack_reply_msg(self, msg):
         # getting name of requesting agent
@@ -377,6 +383,7 @@ def main():
     executor = MultiThreadedExecutor() 
     executor.add_node(node)
     executor.spin()
+    
 
 
 

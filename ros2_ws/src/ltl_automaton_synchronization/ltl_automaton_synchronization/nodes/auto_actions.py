@@ -233,6 +233,7 @@ class SynchroActions(Node):
     
     def start_assising(self, master, action_key, weight):
         self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
+        #FIXMED: Remove comments
         #send ready to master
         #self.synchro_ready_pubs[master].publish(String(data=self.agent))
 
@@ -258,7 +259,8 @@ class SynchroActions(Node):
             self.future.add_done_callback(self.place_callback)
             while not self.done_place:
                 pass
-            self.done_place = False                        
+            self.done_place = False
+            self.get_logger().warn('ACTION NODE: Finished Placing')                       
         else:
             start_time=self.get_clock().now().to_msg().sec
             while(self.get_clock().now().to_msg().sec-start_time<weight):
@@ -295,8 +297,12 @@ class SynchroActions(Node):
         if not self.is_simulation and action_key.startswith('goto'):
             region = action_key.split('_')[2]
             x, y, radius = self.motion_dict['regions'][region]['pose']
-            x_0 =  self.current_pose
             x_t = np.array([x, y, 0]).reshape(3, 1) 
+            # wait to start until the pose is correctly initialized            
+            while not self.pose_flag:
+                pass
+            self.get_logger().warn('ACTION NODE: Starting MPC')
+            x_0 =  self.current_pose
             # initializing obstacles
             obstacles= self.list_obstacles()  
             # MPC object based on the robot we are using
@@ -306,38 +312,25 @@ class SynchroActions(Node):
             else:
                 mpc = MPC_Rosie(x_0, x_t, obstacles)
                 reduction=0.65
+                
             # looping until i'm inside the region but with a smaller radius
-            #TODOD: clean the code
-            
-            while not self.pose_flag:
-                pass
-            self.get_logger().warn('ACTION NODE: Starting MPC')
             while np.sqrt((mpc.x_0[0]-mpc.x_t[0])** 2+(mpc.x_0[1]-mpc.x_t[1])** 2)>reduction*radius:            
                 
-
-                time_init=self.get_clock().now().to_msg()
-                time_init=time_init.sec+time_init.nanosec*1e-9
                 # update obstacles
                 mpc.obstacles = self.list_obstacles()
                 #update pose                
                 mpc.x_0 = self.current_pose                
                 # mpc iteration
-                control, path = mpc.get_next_control()                
-                time_end=self.get_clock().now().to_msg()
-                time_end=time_end.sec+time_end.nanosec*1e-9
-                #self.get_logger().warn('ACTION NODE: Time for MPC: %s' %(time_end-time_init))
-                #self.get_logger().info('control: %s' %control)
-                #self.get_logger().info('control: %s' %self.current_pose)
-                                
+                control, path = mpc.get_next_control()                                       
                 # publish control
                 self.publish_vel_control(control)
-            self.get_logger().warn('ACTION NODE: MPC ended')  
+                  
             # stop the robot at the end
             if self.get_namespace().startswith('/turtlebot'):
                 self.publish_vel_control([0.0, 0.0])
             else:
                 self.publish_vel_control([0.0, 0.0, 0.0])
-
+            self.get_logger().warn('ACTION NODE: MPC ended')
         else:
             start_time=self.get_clock().now().to_msg().sec
             while(self.get_clock().now().to_msg().sec-start_time<weight):
@@ -356,11 +349,9 @@ class SynchroActions(Node):
         if self.get_namespace().startswith('/turtlebot'):
             # linear velocity
             linear = Vector3()
-            #linear.x = np.float64(u[0])
             linear.x = u[0]
             #angular velocity
             angular = Vector3()
-            #angular.z = np.float64(u[1])
             angular.z = u[1]
             # Twist message
             msg = Twist()
