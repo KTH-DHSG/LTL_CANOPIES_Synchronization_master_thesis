@@ -64,6 +64,7 @@ class RRC(Node):
         self.qos_profile = rclpy.qos.QoSProfile(depth=1, history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
        
         self.qos_profile_reply = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST, durability=rclpy.qos.QoSDurabilityPolicy.TRANSIENT_LOCAL)
+        #self.qos_profile_reply = rclpy.qos.QoSProfile(depth=len(self.agents), history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST)
         
         # creating a request publisher
         self.request_pub = self.create_publisher(SynchroRequest, '/synchro_request', self.qos_profile)
@@ -160,7 +161,8 @@ class RRC(Node):
         agent, reply = self.unpack_reply_msg(msg)    
         # updating the number of replies recievd
         self.recieved_replies += 1
-        print(self.recieved_replies)
+        #if self.recieved_replies%50==0:
+            #print(self.recieved_replies)
         # if the agent can provide any help then we store the reply
         # this reduces the MIP computation time
         if self.filter:
@@ -177,19 +179,22 @@ class RRC(Node):
             t_m = list(self.current_request.values())[0]
             m = len(self.current_request)
             # if a solution exists then we filter the replies and compute the reduced MIP
+            confirm={}
+            time=0
             if len(self.replies) >= m:
                 if self.filter:            
-                    filtered_replies = self.filter_replies(self.replies, t_m, m) 
+                    filtered_replies = self.filter_replies(self.replies, t_m, m)
+                    self.agents_involved=len(filtered_replies)
+                    if m==1:
+                        for key, value in filtered_replies.items():                            
+                            for ke2, value2 in value.items():
+                                confirm[key] ={ke2: (1.0 ,value2[1])}
+                                time=value2[1]
+                    else:
+                        confirm, time = self.mip(self.current_request, filtered_replies)                        
                 else:
-                    filtered_replies = self.replies
-                # getting the confirmation
-                self.agents_involved = len(filtered_replies)
-                curtime=self.get_clock().now().to_msg()
-                curtime=curtime.sec+curtime.nanosec*1e-9
-                print(curtime-self.mid_time)
-                confirm, time = self.mip(self.current_request, filtered_replies)
-                print(confirm)
-                print(filtered_replies)
+                    confirm, time = self.mip(self.current_request, self.replies)
+                    self.agents_involved=len(self.replies)
             # if no solution exists then we return None
             else:
                 confirm, time = None, None
@@ -203,7 +208,6 @@ class RRC(Node):
             self.get_logger().warn("Agents in the MIP: "+str(self.agents_involved))
             self.get_logger().warn("RRC time: "+str(self.end_time-self.start_time))
             self.get_logger().warn("Filter and MIP time: "+str(self.end_time-self.mid_time))
-            self.get_logger().warn("Filtering time: "+str(self.end_time-self.mid_time))
             self.get_logger().info(str(confirm_msg))
             #self.confirm_pub.publish(confirm_msg)    
     
@@ -333,8 +337,10 @@ class RRC(Node):
                 m.addConstr(constr == 1, 'col%s' % str(j))
             
             # Solve
+            print("optimize")
+            m.setParam('OutputFlag', 1)
             m.optimize()
-            
+            print("end")
             # Check if optimal solution is found
             if m.status != GRB.OPTIMAL:
                 self.ros_node.get_logger().warning('GUROBI: No solution found!')

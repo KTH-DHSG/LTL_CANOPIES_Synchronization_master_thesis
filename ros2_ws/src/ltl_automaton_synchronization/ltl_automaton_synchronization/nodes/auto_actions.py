@@ -86,6 +86,7 @@ class SynchroActions(Node):
         self.pose_flag = False
         
         # flag used to check if the pick action has been completed
+        self.done_pick = False
         self.done_place = False
     
     def build_automaton(self):
@@ -232,8 +233,8 @@ class SynchroActions(Node):
     
     
     def start_assising(self, master, action_key, weight):
-        self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
-        #FIXMED: Remove comments
+        #self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
+
         #send ready to master
         #self.synchro_ready_pubs[master].publish(String(data=self.agent))
 

@@ -6,9 +6,9 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     nodes = [] 
-    num_agents = 100
-    num_ass_actions = 1
-    filter = True   
+    num_agents = 350
+    num_ass_actions = 8
+    filter = False   
     for i in range(num_agents):
         node= Node(
             package='synchronization_experiments',
@@ -21,7 +21,7 @@ def generate_launch_description():
                 {'num_agents': num_agents},
                 {'num_ass_actions': num_ass_actions},
                 {'filter': filter},
-                {'waiting': 20}
+                {'waiting': 350}
                 
             ]
         )
