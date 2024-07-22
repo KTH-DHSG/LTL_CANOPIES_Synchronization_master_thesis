@@ -140,16 +140,20 @@ class SynchroPlanner(MainPlanner):
         
         return dependency[1][0]   
     '''
-  
-    # for paper
+    # for paper, experimental
     def chose_ROI(self, dependency):
         if self.agent_name == '/turtlebot4':
             return dependency[1][1]
         if self.agent_name == '/turtlebot6':
             return dependency[1][0]
         
+        return dependency[1][0] 
+    
+    '''
+    # for paper, scalability
+    def chose_ROI(self, dependency):      
         return dependency[1][0]   
-
+    '''
     def set_initial_state(self):        
         # if None then the initial state will be taken direcly from the dictionaries
         if not self.initial_state_ts_dict == None:

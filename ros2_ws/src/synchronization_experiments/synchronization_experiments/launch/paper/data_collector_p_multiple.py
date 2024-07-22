@@ -14,8 +14,8 @@ def generate_launch_description():
         default_value='["/rosie0", "/rosie1", "/rosie2", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5"]'
     )
     agents_types_arg = DeclareLaunchArgument(
-        'agents',
-        default_value='["/rosie0", "/rosie1", "/rosie2", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5"]'
+        'agents_types',
+        default_value='["rosie", "rosie", "rosie", "turtlebot", "turtlebot2", turtlebot", "turtlebot", "turtlebot"]'
     )
 
     possible_agent_types = ['rosie', 'turtlebot']

@@ -1,7 +1,3 @@
-#!/bin/bash
-
-# Define the ROS 2 launch commands you want to run
-declare -a commands=(
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/rosie0.yaml task:='X wait && []<> (harvest && h1 && <> (harvest && h3 && <> deliver))' ns:=rosie0"
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/rosie1.yaml task:='X wait &&  []<> (manipulate && <> (supervise && <> load))' ns:=rosie1"
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/rosie2.yaml task:='X wait && []<> (harvest && h2 && <> (harvest && h4 && <> deliver))' ns:=rosie2"
@@ -92,59 +88,3 @@ declare -a commands=(
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/turtlebot4.yaml task:='X wait && []<> (patrol && p12 && <> (patrol && p9 && <> (check_connection && c1)))' ns:=turtlebot57"
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/turtlebot5.yaml task:='X wait && []<> (patrol && p3 && <> (patrol && p8 && <> group))' ns:=turtlebot58"
 "ros2 launch synchronization_experiments generic_agent.py agents:='["/rosie0", "/rosie1", "/rosie2", "/turtlebot0", "/turtlebot1", "/turtlebot2", "/turtlebot3", "/turtlebot4", "/turtlebot5", "/rosie3", "/rosie4", "/rosie5", "/turtlebot6", "/turtlebot7", "/turtlebot8", "/turtlebot9", "/turtlebot10", "/turtlebot11", "/rosie6", "/rosie7", "/rosie8", "/turtlebot12", "/turtlebot13", "/turtlebot14", "/turtlebot15", "/turtlebot16", "/turtlebot17", "/rosie9", "/rosie10", "/rosie11", "/turtlebot18", "/turtlebot19", "/turtlebot20", "/turtlebot21", "/turtlebot22", "/turtlebot23", "/rosie12", "/rosie13", "/rosie14", "/turtlebot24", "/turtlebot25", "/turtlebot26", "/turtlebot27", "/turtlebot28", "/turtlebot29", "/rosie15", "/rosie16", "/rosie17", "/turtlebot30", "/turtlebot31", "/turtlebot32", "/turtlebot33", "/turtlebot34", "/turtlebot35", "/rosie18", "/rosie19", "/rosie20", "/turtlebot36", "/turtlebot37", "/turtlebot38", "/turtlebot39", "/turtlebot40", "/turtlebot41", "/rosie21", "/rosie22", "/rosie23", "/turtlebot42", "/turtlebot43", "/turtlebot44", "/turtlebot45", "/turtlebot46", "/turtlebot47", "/rosie24", "/rosie25", "/rosie26", "/turtlebot48", "/turtlebot49", "/turtlebot50", "/turtlebot51", "/turtlebot52", "/turtlebot53", "/rosie27", "/rosie28", "/rosie29", "/turtlebot54", "/turtlebot55", "/turtlebot56", "/turtlebot57", "/turtlebot58", "/turtlebot59"]' dictionary_file:=/home/davideperon/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/install/synchronization_experiments/share/synchronization_experiments/config/paper/turtlebot6.yaml task:='X wait && <> (remove_object && <>(patrol && p5 && <>(check_connection && c2))) && []<> (patrol && p5 && <> (patrol && p7))' ns:=turtlebot59"
-)
-
-
-
-index=$1
-
-#gnome-terminal --tab -- bash -c "echo 'This is a new tab'; ./launch_multiple.sh; sleep 10; exec bash;"
-
-# Start a new tmux session
-SESSION_NAME="session$index"
-
-# Function to clean up tmux session on exit
-cleanup() {
-    tmux kill-session -t $SESSION_NAME
-}
-
-# Trap EXIT signal to clean up
-trap cleanup EXIT
-
-# Check if the session already exists
-tmux has-session -t $SESSION_NAME 2>/dev/null
-
-
-# Start a new tmux session
-tmux new-session -d -s $SESSION_NAME
-
-
-# Split the window into 3 rows
-tmux split-window -v
-tmux split-window -v
-tmux select-pane -t 0
-tmux split-window -v
-tmux select-pane -t 0
-tmux split-window -h
-tmux select-pane -t 2
-tmux split-window -h
-tmux select-pane -t 4
-tmux split-window -h
-tmux select-pane -t 6
-tmux split-window -v
-tmux select-pane -t 6
-tmux split-window -h 
-tmux select-pane -t 8
-tmux split-window -h 
-
-
-# Send commands to each pane
-for ((i=0; i<9; i++)); do
-    j=$((i+1))
-    k=$((i+index))
-    tmux send-keys -t $SESSION_NAME.$j "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" C-m
-    tmux send-keys -t $SESSION_NAME.$j "${commands[$k]}" C-m
-    sleep 0.2
-done
-# Attach to the tmux session
-tmux attach-session -t $SESSION_NAME

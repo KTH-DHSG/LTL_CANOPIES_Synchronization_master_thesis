@@ -474,7 +474,7 @@ action:
         - g
       type: collaborative
     remove_object:
-      weight: 50
+      weight: 80
       guard: m
       label: remove_object
       dependency:
@@ -500,7 +500,7 @@ action:
       dependency: {}
       type: local
     wait:
-      weight: 30
+      weight: 200
       guard: '1'
       label: wait
       dependency: {}
