@@ -88,6 +88,8 @@ class SynchroActions(Node):
         # flag used to check if the pick action has been completed
         self.done_pick = False
         self.done_place = False
+        self.finished_picking = False
+        self.done_manipulation = False
     
     def build_automaton(self):
         
@@ -145,9 +147,13 @@ class SynchroActions(Node):
         self.publish_vel_control([0.0, 0.0, 0.0])
         
         if self.agent=='/rosie1':
-            self.pick_action_client = ActionClient(self, Pick, "/rosie1/pick_action")
-            self.place_service = self.create_client(Trigger, "/rosie1/davide_service")
-        
+            #self.pick_action_client = ActionClient(self, Pick, "/rosie1/pick_action")
+            #self.place_service = self.create_client(Trigger, "/rosie1/davide_service")
+            #self.finished_pick_pub = self.create_publisher(String, '/rosie1/finished_pick', 10)
+            self.start_manipulation_pub = self.create_publisher(String, '/rosie1/start_manipulation', 10)
+            self.finished_pick_place_sub = self.create_subscription(String, '/rosie1/finished_place', self.finished_place_cb, 10)
+        if self.agent=='/turtlebot6':
+            self.finished_piick_sub = self.create_subscription(String, '/rosie1/finished_pick', self.finished_pick_callback, 10)
         
 
         # MOCAP subscribers
@@ -225,43 +231,55 @@ class SynchroActions(Node):
         
         # resetting the flag
         self.agents_ready = 0
-        
-        # executing the action, we just wait for now
-        start_time=self.get_clock().now().to_msg().sec
-        while(self.get_clock().now().to_msg().sec-start_time<weight):
-            pass
+        # safe mechanism for the object removal
+        if weight==80:
+            print('ACTION NODE: Object removal')
+            while not self.finished_picking:
+                pass
+            self.finished_picking = False
+            self.get_logger().warn('ACTION NODE: Object removed')
+        else:
+            # executing the action, we just wait for now
+            start_time=self.get_clock().now().to_msg().sec
+            while(self.get_clock().now().to_msg().sec-start_time<weight):
+                pass
     
     
     def start_assising(self, master, action_key, weight):
         self.get_logger().warn('ACTION NODE: Assisitve action, waiting for starting message')
 
         #send ready to master
-        #self.synchro_ready_pubs[master].publish(String(data=self.agent))
+        self.synchro_ready_pubs[master].publish(String(data=self.agent))
 
         # wait until a confirmation is given by the master      
-        #while not self.start_assising_flag:
-            #pass
+        while not self.start_assising_flag:
+            pass
         # resetting the flag
         self.start_assising_flag = False
         
         # executing the action, we just wait for now
         if self.execute_manipulation and action_key=='h_remove_object':
             self.get_logger().warn('ACTION NODE: Starting Picking')
+            self.start_manipulation_pub.publish(String(data=self.agent))
             #call the service to remove the object
-            self._send_goal()
-            while not self.done_pick:
+            #self._send_goal()
+            #while not self.done_pick:
+                #pass
+            #self.done_pick = False 
+            # acknowledge the master that the pick has been completed         
+            #self.finished_pick_pub.publish(String(data=self.agent))
+            #self.place_service.wait_for_service()
+            #self.get_logger().warn('ACTION NODE: Starting Placing')
+            #self.req = Trigger.Request()
+            #self.future = self.place_service.call_async(self.req)
+            #self.future.add_done_callback(self.place_callback)
+            #while not self.done_place:
+                #pass
+            #self.done_place = False
+            #self.get_logger().warn('ACTION NODE: Finished Placing')  
+            while not self.done_manipulation:
                 pass
-            self.done_pick = False          
-
-            self.place_service.wait_for_service()
-            self.get_logger().warn('ACTION NODE: Starting Placing')
-            self.req = Trigger.Request()
-            self.future = self.place_service.call_async(self.req)
-            self.future.add_done_callback(self.place_callback)
-            while not self.done_place:
-                pass
-            self.done_place = False
-            self.get_logger().warn('ACTION NODE: Finished Placing')                       
+            self.get_logger().warn('ACTION NODE: Finished Placing')                    
         else:
             start_time=self.get_clock().now().to_msg().sec
             while(self.get_clock().now().to_msg().sec-start_time<weight):
@@ -293,6 +311,10 @@ class SynchroActions(Node):
         self.get_logger().info('ACTION NODE: Agent %s is ready to start the collaborative action' %msg.data)
         self.start_assising_flag = True
 
+    def finished_pick_callback(self, msg):
+        self.get_logger().warn('ACTION NODE: Finished picking')
+        self.finished_picking = True
+    
     def select_action(self, action_key, weight):
         # check if we are not in a simulation
         if not self.is_simulation and action_key.startswith('goto'):
@@ -426,7 +448,7 @@ class SynchroActions(Node):
         )
         
         goal_msg.grasp_pose = Pose(
-            position=Point(x=0., y=0.02, z=0.065),
+            position=Point(x=0., y=0.02, z=0.09),
             orientation=quaternion_msg
         )
 
@@ -469,7 +491,8 @@ class SynchroActions(Node):
         # Set the flag to True to indicate that the place action has been completed
         self.done_place = True
 
-
+    def finished_place_cb(self, msg):
+        self.done_manipulation = True
 
 
 

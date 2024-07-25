@@ -141,7 +141,7 @@ action:
       dependency: {}
       type: assisting
     h_remove_object:
-      weight: 60
+      weight: 110
       guard: m
       label: h_remove_object
       dependency: {}

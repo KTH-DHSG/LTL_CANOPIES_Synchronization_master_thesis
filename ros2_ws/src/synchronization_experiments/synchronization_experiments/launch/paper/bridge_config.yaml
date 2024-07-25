@@ -1,0 +1,18 @@
+# Name of the domain bridge, used for node naming and logging
+name: my_bridge
+from_domain: 30
+to_domain: 42
+topics:
+  rosie1/start_manipulation:
+    type: std_msgs/msg/String
+    from_domain: 30
+    to_domain: 42
+  rosie1/finished_pick:
+    type: std_msgs/msg/String
+    from_domain: 42
+    to_domain: 30
+  rosie1/finished_place:
+    type: std_msgs/msg/String
+    from_domain: 42
+    to_domain: 30
+ 

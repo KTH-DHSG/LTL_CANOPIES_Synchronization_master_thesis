@@ -33,7 +33,7 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'hard_task':'X wait &&  []<> (manipulate && <> (supervise && <> load))' },
+                {'hard_task':'X wait &&  []<> (supervise && <> (load && <> manipulate))' },
                 {'soft_task': ""},
                 {'initial_ts_state_from_agent': False},
                 {'motion_action_dictionary_path': os.path.join(get_package_share_directory('synchronization_experiments'), 'config/paper', 'rosie1.yaml')},

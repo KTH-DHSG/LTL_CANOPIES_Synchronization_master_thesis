@@ -24,7 +24,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'try = ltl_automaton_synchronization.nodes.try:main',
+                'manipulation_node = ltl_automaton_synchronization.nodes.manipulation_node:main',
                 'synchro = ltl_automaton_synchronization.nodes.synchro:main',
                 'auto_actions = ltl_automaton_synchronization.nodes.auto_actions:main'
         ],
