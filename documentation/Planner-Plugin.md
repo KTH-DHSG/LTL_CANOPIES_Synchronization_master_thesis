@@ -1,6 +1,6 @@
-# LTL Planner Plugins
+ LTL Planner Plugins
 
-The planner offers an interface to run python plugins.
+The planner offers an interface to run python plugins. Plugins are object classes with a set of standardized methods that will be called by the planner node.
 
 ## Launching plugins
 To launch a plugin, add the plugin in the "/plugin" parameter of the planner node.

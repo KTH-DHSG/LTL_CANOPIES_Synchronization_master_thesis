@@ -5,7 +5,7 @@ An LTL (Linear Temporal Logic) planner implementation based on LTL2BA and LTL au
 
 A non-deterministic state graph, called product graph, is generated from the product of the Buchi automaton and the action model. This product graph is used to track possible agent state and generate a plan (output word) and action sequence (input word) for the agent.
 
-For more information, please take a look at the [wiki](../../../wiki)
+For more information, please take a look at the [documentation](/documentation)
 
 ## Config files
 
@@ -60,11 +60,11 @@ Planner node. Build a product graph from a given transition system and LTL formu
     
 - `hard_task` (string)
 
-    Hard task to be carried out by the agent, is required. Should be written using syntax from [LTL2BA](http://www.lsv.fr/~gastin/ltl2ba/). It is advised to use a YAML file to define this parameter as some characters in LTL syntax might cause trouble with XML in launch files. More information on the syntax on the [wiki page](../../../wiki/LTL-Formula).
+    Hard task to be carried out by the agent, is required. Should be written using syntax from [LTL2BA](http://www.lsv.fr/~gastin/ltl2ba/). It is advised to use a YAML file to define this parameter as some characters in LTL syntax might cause trouble with XML in launch files. More information on the syntax on the [documentation page](/documentation/LTL-Formula).
 
 - `soft_task` (string)
 
-    Soft task to be carried out by the agent, is optional. Soft tasks are enforced or not by the planner depending on the beta value. Should be written using syntax from [LTL2BA](http://www.lsv.fr/~gastin/ltl2ba/). It is advised to use a YAML file to define this parameter as some characters in LTL syntax might cause trouble with XML in launch files. More information on the syntax on the [wiki page](../../../wiki/LTL-Formula).
+    Soft task to be carried out by the agent, is optional. Soft tasks are enforced or not by the planner depending on the beta value. Should be written using syntax from [LTL2BA](http://www.lsv.fr/~gastin/ltl2ba/). It is advised to use a YAML file to define this parameter as some characters in LTL syntax might cause trouble with XML in launch files. More information on the syntax on the [documentation page](/documentation/LTL-Formula).
 
 - `initial_beta` (double, default: 1000)
 
@@ -94,15 +94,15 @@ Planner node. Build a product graph from a given transition system and LTL formu
     If true, will replan when receiving a TS state that is not the next one in the plan (output word) using the TS state as initial state.
     
 #### LTL formula
-For more information on LTL task formulation and syntax, please take a look at the [wiki page](../../../wiki/LTL-Formula)
+For more information on LTL task formulation and syntax, please take a look at the [documentation page](/documentation/LTL-Formula)
 
 #### Transition system definition
 The final transition system is built from one or more action models. Those action models are also transition systems and their graph product is the final transition system.
 
 As the final transition system, each individual action model transition system is discrete, finite, and can be deterministic or not. The input on each transition is an action that can be carried out by the agent.
 
-More information about the transition system can be found in the corresponding [wiki page](../../../wiki/Transition-System-Definition)
+More information about the transition system can be found in the corresponding [documentation page](/documentation/Transition-System-Definition)
 
 #### Plugins
-A plugin system allows for integrating more feature to the planner node (notably used by the Human-In-the-Loop mixed initiative controller). Details on the plugin can be found on the [wiki page](../../../wiki/Planner-Plugin)
+A plugin system allows for integrating more feature to the planner node (notably used by the Human-In-the-Loop mixed initiative controller). Details on the plugin can be found on the [documentation page](../../../documentation/Planner-Plugin)
 

@@ -31,7 +31,7 @@ R. Baran, X. Tan, P. Varnai, P. Yu, S. Ahlberg, M. Guo, W. Shaw Cortez, and D. V
 In the following we will specify specifi version for the software used to guarantee compatibility among them
 - [Robot Operating System 2 (ROS2)](https://docs.ros.org/en/humble/index.html), package tested on Humble distribution on Ubuntu 22.04
 
-- [LTL2BA](https://github.com/KTH-DHSG/ros_ltl2ba). ROS2 package wrapping for the LTL2BA software by Dennis Oddoux and Paul Gastin.
+- [LTL2BA](https://github.com/KTH-DHSG/ros_ltl2ba/tree/ros2). ROS2 package wrapping for the LTL2BA software by Dennis Oddoux and Paul Gastin.
     - Clone the repository from Github in your ros workspace:
     ```
     cd ros2_ws/src
@@ -74,7 +74,7 @@ In the following we will specify specifi version for the software used to guaran
   pip3 install numpy=1.21.5
   ```
 
-- [Matplotlib] (https://matplotlib.org/). Software used to plot the results of experiments. (Version 3.5.1 Riquired).
+- [Matplotlib](https://matplotlib.org/). Software used to plot the results of experiments. (Version 3.5.1 Riquired).
   ```
   pip3 install matplotlib=3.5.1
   ```
@@ -93,13 +93,15 @@ In the following we will specify specifi version for the software used to guaran
   ```
 
 - [ros2_domain_bridge](https://github.com/ros2/domain_bridge/tree/humble?tab=readme-ov-file) Bridge to allow the comunication between different `ROS_DOMAIN_ID` this is required in the manipulation since the code developed for that tas was not compatible with CycloneDDS and to avoid the delays it was necessary to use a different `ROS_DOMAIN_ID` for the robot that executes the manipulation. 
-```
-sudo apt install ros-humble-domain-bridge
-```
-The configuration file for our specific scenario is avilable [here](/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml). To run the bridge by itself use:
-```
-ros2 run domain_bridge domain_bridge ~/ros2_ws/src/LTL_CANOPIES_Synchronization_master_thesis/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml
-```
+  ```
+  sudo apt install ros-humble-domain-bridge
+  ```
+  The configuration file for our specific scenario is avilable [here](/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml). To run the bridge by itself use:
+  ```
+  ros2 run domain_bridge domain_bridge ~/ros2_ws/src/LTL_CANOPIES_Synchronization_master_thesis/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml
+  ```
+
+- [motion_capture_system_r2](https://github.com/KTH-DHSG/motion_capture_system_r2) ROS2 version of the software required to use the Qualysis motion capture system in the lab. To install refer to the linked repository.
   
 ### Building
 To build the package, clone the current repository in your ros2 workspace and build it.
@@ -143,4 +145,4 @@ This metapackage is composed of the following packages.
 
 - **[synchronization_experiments](\synchronization_experiments)**: A package including experimetns and simulations code used in the publication.
 
--**[rosie_pick_and_place_interfaces](\rosie_pick_and_place_interfaces)**: An interfaces package to enable pick and place operations with the Hebi Rosies available in the lab.
+- **[rosie_pick_and_place_interfaces](\rosie_pick_and_place_interfaces)**: An interfaces package to enable pick and place operations with the Hebi Rosies available in the lab.

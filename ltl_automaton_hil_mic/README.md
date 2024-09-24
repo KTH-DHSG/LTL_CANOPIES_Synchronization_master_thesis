@@ -140,7 +140,7 @@ Mix human and planner commands for action triggered by a change of value on a bo
     Action (from the transition system, and acting on the tracked state dimension) that would be executed when the output topic is switched to "True"
 
 ## Plugins
-In addition of the controller nodes, the package provides the plugins (run at ltl_automaton_planner/planner_node.py level) necessary for those controllers to work. For more information on the plugins, please take a look at the [wiki](../../../wiki/Planner-Plugin).
+In addition of the controller nodes, the package provides the plugins (run at ltl_automaton_planner/planner_node.py level) necessary for those controllers to work. For more information on the plugins, please take a look at the [documentation](/documentation/Planner-Plugin).
 
 ### trap_detection.py
 Provides the trap check service in the LTL planner node. The plugin uses the requested TS state to update its LTL state and check if this updated LTL state would be able to fulfill the given LTL formula. If not, the tested TS state is considered a trap.
