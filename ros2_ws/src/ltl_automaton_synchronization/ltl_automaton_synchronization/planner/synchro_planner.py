@@ -127,13 +127,7 @@ class sync_LTLPlanner(LTLPlanner):
                 now = now.sec + now.nanosec/1e9
                 #calculating time remaining for current action
                 time_remaining = max(0, self.last_weight-(now- self.start_last_move))
-               # getting the initial state
-                #print("segment: ", self.segment)
-                #print("index: ", self.index)
-                #print("line: ", self.run.line)
-                #print("loop: ", self.run.loop)          
-                
-                
+               # getting the initial state 
                 #if my curren action will bring me in a state inside the line plan
                 if self.segment == 'line' and self.index < len(self.run.line)-1:
                     s_ts_node = self.run.line[self.index+1]

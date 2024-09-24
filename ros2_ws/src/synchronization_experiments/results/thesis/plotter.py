@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pickle
 import numpy as np
 #Path to the pickle file
-file_path = '/home/davide/git_thesis/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/src/synchronization_experiments/results/thesis/data_sim_1.pkl'
+file_path = '/home/davide/git_thesis/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/src/synchronization_experiments/results/thesis/data_sim_nominal.pkl'
 # Open the pickle file and load the data
 with open(file_path, 'rb') as file:
     data = pickle.load(file)

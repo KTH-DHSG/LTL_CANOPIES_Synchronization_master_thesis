@@ -134,7 +134,7 @@ class SynchroActions(Node):
         for agent in self.agents:
             self.synchro_ready_pubs[agent]= self.create_publisher(String, agent+'/synchro_ready', self.qos_profile)
 
-        # creating publishers to say that i'm ready to other agents and adding them to a dictionary
+        # creating publishers make other agents start their actions and adding them to a dictionary
         self.synchro_start_pubs = {}
         for agent in self.agents:
             self.synchro_start_pubs[agent]= self.create_publisher(String, agent+'/synchro_start', self.qos_profile)
@@ -174,9 +174,6 @@ class SynchroActions(Node):
             if self.robot_model[self.current_state][state]['action'] == action_label:
                 next_state = state                
                 weight = self.robot_model[self.current_state][state]['weight']
-        #print("action_label: ", action_label)
-        #print("current_state: ", self.current_state)
-        #print("next_state: ", next_state)
         # getting action key
         action_key = self.key_given_label(action_label)
         # check the type of action 
@@ -261,22 +258,7 @@ class SynchroActions(Node):
         if self.execute_manipulation and action_key=='h_remove_object':
             self.get_logger().warn('ACTION NODE: Starting Picking')
             self.start_manipulation_pub.publish(String(data=self.agent))
-            #call the service to remove the object
-            #self._send_goal()
-            #while not self.done_pick:
-                #pass
-            #self.done_pick = False 
-            # acknowledge the master that the pick has been completed         
-            #self.finished_pick_pub.publish(String(data=self.agent))
-            #self.place_service.wait_for_service()
-            #self.get_logger().warn('ACTION NODE: Starting Placing')
-            #self.req = Trigger.Request()
-            #self.future = self.place_service.call_async(self.req)
-            #self.future.add_done_callback(self.place_callback)
-            #while not self.done_place:
-                #pass
-            #self.done_place = False
-            #self.get_logger().warn('ACTION NODE: Finished Placing')  
+            # wait until the manipulation is finished 
             while not self.done_manipulation:
                 pass
             self.get_logger().warn('ACTION NODE: Finished Placing')                    

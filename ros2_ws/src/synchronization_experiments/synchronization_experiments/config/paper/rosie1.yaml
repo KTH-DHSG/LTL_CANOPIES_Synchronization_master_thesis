@@ -170,12 +170,6 @@ action:
       label: supervise
       dependency: {}
       type: local
-    wait:
-      weight: 20
-      guard: '1'
-      label: wait
-      dependency: {}
-      type: local
     free:
       weight: 1
       guard: '1'

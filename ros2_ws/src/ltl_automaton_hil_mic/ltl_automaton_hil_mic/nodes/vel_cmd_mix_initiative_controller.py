@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-#TODOD: this node has not been tested but everything seems to be in order and all the adaptations
-# to work with ROS2 have been made.
  
 import rclpy
 from rclpy.node import Node
