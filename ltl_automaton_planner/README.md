@@ -35,7 +35,7 @@ Planner node. Build a product graph from a given transition system and LTL formu
 
     Next move from the output word (action sequence) to be carried out by the agent in order to satisfy the plan.
 
-- `possible_ltl_states` ([ltl_automaton_msg_srv/srv/LTLStateArray](/ltl_automaton_msg_srv/msg/LTLStateArray.msg))
+- `possible_ltl_states` ([ltl_automaton_msg_srv/msg/LTLStateArray](/ltl_automaton_msg_srv/msg/LTLStateArray.msg))
     
     Current possible states of the agent, can be more than one as the system is non-deterministic. LTL states are composed of a TS (Transisition System) state and a Büchi state.
 
