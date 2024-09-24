@@ -43,7 +43,7 @@ Planner node. Build a product graph from a given transition system and LTL formu
 
     Prefix plan (also called prefix word), the action sequence to be carried out once by the agent after planning.
 
-- `suffix_plan` ([ltl_automaton_msgs/LTLPlan](/ltl_automaton_msgs/msg/LTLPlan.msg))
+- `suffix_plan` ([ltl_automaton_msgs/LTLPlan](/ltl_automaton_msg_srv/msg/LTLPlan.msg))
     
     Suffix plan (also called suffix word), the action sequence to be carried out repeatively after the prefix plan.
     
