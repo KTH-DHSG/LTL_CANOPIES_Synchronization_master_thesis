@@ -96,9 +96,9 @@ In the following we will specify specifi version for the software used to guaran
 ```
 sudo apt install ros-humble-domain-bridge
 ```
-The configuration file for our specific scenario is avilable [here](/src/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml). To run the bridge by itself use:
+The configuration file for our specific scenario is avilable [here](/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml). To run the bridge by itself use:
 ```
-ros2 run domain_bridge domain_bridge ~/LTL_CANOPIES_Synchronization_master_thesis/ros2_ws/src/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml
+ros2 run domain_bridge domain_bridge ~/ros2_ws/src/LTL_CANOPIES_Synchronization_master_thesis/synchronization_experiments/synchronization_experiments/launch/paper/bridge_config.yaml
 ```
   
 ### Building
@@ -126,7 +126,7 @@ It will launch a planner using the formula provided in the launch file *ltl_auto
 
 ### ltl_automaton_synchronization usage
 
-For the details on how to use this specific package refere to the [synchronization_experiments](/src/synchronization_experiments/) package.
+For the details on how to use this specific package refere to the [synchronization_experiments](/synchronization_experiments/) package.
 
 ## Packages
 This metapackage is composed of the following packages.

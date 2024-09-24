@@ -15,7 +15,7 @@ The following transistion systems are currently available in the package:
 Monitor the position of an agent in a grid-discretized 2D plane. Takes as input a pose (all message format) and output the name of region as a string. Cells are square and an agent is considered in a cell only based on x, y values (and an added hysteresis).
 When better accuracy is required, disk regions can be stacked on top of cells. An agent is considered on those so called "stations" when inside the disk and aligned within an angular tolerance, and requesting access to the station through a topic. The stations are only connected in the transition system graph to the cell region they are on. To leave a station, the agent simply needs to empty the access request and it will be considered on the underlying cell.
 
-<a href="url"><img src="/src/documentation/pictures/region_2d_pose_station_example.png" align="center" height="190" width="500"/></a>
+<a href="url"><img src="/documentation/pictures/region_2d_pose_station_example.png" align="center" height="190" width="500"/></a>
 
 **Example transition system with four cells and a station**
 
@@ -37,7 +37,7 @@ When better accuracy is required, disk regions can be stacked on top of cells. A
   
 #### Services
   
-- `closest_region` ([ltl_automaton_msg_srv/srv/ClosestState](/src/ltl_automaton_msg_srv/srv/ClosestState.srv))
+- `closest_region` ([ltl_automaton_msg_srv/srv/ClosestState](/ltl_automaton_msg_srv/srv/ClosestState.srv))
 
 Returns the closest region to the agent with distance to this closest region.
 

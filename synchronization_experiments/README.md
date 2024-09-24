@@ -1,5 +1,5 @@
 # sunchronization_experiments
-This package contains all the examples and experiments developed to work with the [ltl_automaton_synchronization](/src/ltl_automaton_synchronization/) package. It includes all the necessary launch files and scripts to perform the experiments and simulations described in the paper.
+This package contains all the examples and experiments developed to work with the [ltl_automaton_synchronization](/ltl_automaton_synchronization/) package. It includes all the necessary launch files and scripts to perform the experiments and simulations described in the paper.
 
 In the following when we refer to `$agent` this value must be substituted with the name of an agent.
 
@@ -87,20 +87,20 @@ This node is used to save the actions executed by the agents during an experimen
 Node used to test the performace of the request reply confirmation cycle and the effectiveness of the MIP filtering procedure.
 
 #### Subscribed Topics
-- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/src/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
+- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
 
     Request topic where each agent can publish or receive a message requesting help from other agents to complete an action. A request consists of a set of actions with respective regions where they must be completed and the time the action is supposed to start.
 
-- `agent0/snchro_reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/src/ltl_automaton_msg_srv/msg/SynchroReply.msg))
+- `agent0/snchro_reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/ltl_automaton_msg_srv/msg/SynchroReply.msg))
 
     Reply topic for `agent0`. This topic is used by `agent0` to recieve the replies from other agents.
 
 #### Published Topics
-- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/src/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
+- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
 
     Request topic where each agent can publish or receive a message requesting help from other agents to complete an action. A request consists of a set of actions with respective regions where they must be completed and the time the action is supposed to start.
 
-- `agent0/snchro_reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/src/ltl_automaton_msg_srv/msg/SynchroReply.msg))
+- `agent0/snchro_reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/ltl_automaton_msg_srv/msg/SynchroReply.msg))
 
     Reply topic for `agent0`. This topic is used by the agents to send their reply to `agent0`.
 

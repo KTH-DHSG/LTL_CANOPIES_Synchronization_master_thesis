@@ -18,7 +18,7 @@ Mix human and planner input according to the distance with "trap" regions. Trap 
 
 #### Subscribed Topics
 
-- `ts_state` ([ltl_automaton_msg_srv/TransitionSystemStateStamped](/src/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
+- `ts_state` ([ltl_automaton_msg_srv/TransitionSystemStateStamped](/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
 
     Agent TS state topic. The agent TS state is composed of a list of states from the different state models composing the action model. The planner node receives the agent TS state on this topic and update accordingly the next action and the set of possible states.
 
@@ -32,17 +32,17 @@ Mix human and planner input according to the distance with "trap" regions. Trap 
 
 #### Published Topics
 
-- `cmd_vel` ([geometry_msgs/msg/Twist](hhttps://docs.ros2.org/foxy/api/geometry_msgs/msg/Twist.html))
+- `cmd_vel` ([geometry_msgs/msg/Twist](https://docs.ros2.org/foxy/api/geometry_msgs/msg/Twist.html))
 
     Mixed velocity output of the controller.
 
 #### Used Services
 
-- `closest_region` ([ltl_automaton_msg_srv/srv/ClosestState](/src/ltl_automaton_msg_srv/srv/ClosestState.srv))
+- `closest_region` ([ltl_automaton_msg_srv/srv/ClosestState](/ltl_automaton_msg_srv/srv/ClosestState.srv))
 
     Get the closest region (2d_pose_region) and distance to said region.
 
-- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/src/ltl_automaton_msg_srv/srv/TrapCheck.srv))
+- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/ltl_automaton_msg_srv/srv/TrapCheck.srv))
 
     Check if sent state is a trap state and if is connected to current TS state.
 
@@ -101,7 +101,7 @@ Mix human and planner commands for action triggered by a change of value on a bo
 
 #### Subscribed Topics
 
-- `ts_state` ([ltl_automaton_msg_srv/msg/TransitionSystemStateStamped](/src/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
+- `ts_state` ([ltl_automaton_msg_srv/msg/TransitionSystemStateStamped](/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
 
     Agent TS state topic. The agent TS state is composed of a list of states from the different state models composing the action model. The planner node receives the agent TS state on this topic and update accordingly the next action and the set of possible states.
 
@@ -121,7 +121,7 @@ Mix human and planner commands for action triggered by a change of value on a bo
 
 #### Used Services
 
-- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/src/ltl_automaton_msg_srv/srv/TrapCheck.srv))
+- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/ltl_automaton_msg_srv/srv/TrapCheck.srv))
 
     Check if sent state is a trap state and if is connected to current TS state.
 
@@ -147,7 +147,7 @@ Provides the trap check service in the LTL planner node. The plugin uses the req
 
 #### Services
 
-- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/src/ltl_automaton_msg_srv/srv/TrapCheck.srv))
+- `check_for_trap` ([ltl_automaton_msg_srv/srv/TrapCheck](/ltl_automaton_msg_srv/srv/TrapCheck.srv))
 
     Check if sent state is a trap state and if is connected to current TS state.
 

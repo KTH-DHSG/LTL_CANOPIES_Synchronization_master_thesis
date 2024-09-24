@@ -1,9 +1,9 @@
 # ltl_automaton_synchronization
 
 ## Overview
-This package builds upon the [ltl_automaton_planner](/src/ltl_automaton_planner/) package by adding multi-agent coordination and synchronization capabilities. For all the basic functionalities and information, please refer to the [ltl_automaton_planner](/src/ltl_automaton_planner/).
+This package builds upon the [ltl_automaton_planner](/ltl_automaton_planner/) package by adding multi-agent coordination and synchronization capabilities. For all the basic functionalities and information, please refer to the [ltl_automaton_planner](/ltl_automaton_planner/).
 
-Moreover, for the launch files and usage examples, please refer to the [synchronization_experiments](/src/synchronization_experiments) package.
+Moreover, for the launch files and usage examples, please refer to the [synchronization_experiments](/synchronization_experiments) package.
 
 In the following sections, the term `curr_agent` refers to the agent that started the node, while `agent` refers to any of the agents present in the workspace.
 
@@ -12,15 +12,15 @@ In the following sections, the term `curr_agent` refers to the agent that starte
 This is an updated version of the planner node. In addition to the existing functions, it handles collaboration and synchronization of agents through a request-reply and confirmation mechanism. Below, we list only the topics that are added compared to the original planner node.
 
 #### Subscribed Topics
-- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/src/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
+- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
 
     Request topic where each agent can publish or receive a message requesting help from other agents to complete an action. A request is composed of a set of actions with respective regions where they must be completed and the time when the action is supposed to start.
 
-- `curr_agent/reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/src/ltl_automaton_msg_srv/msg/SynchroReply.msg))
+- `curr_agent/reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/ltl_automaton_msg_srv/msg/SynchroReply.msg))
 
     Reply topic of the current agent. Here, `curr_agent` refers to the namespace of the agent in the launch file that started the node.
 
-- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/src/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
+- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
 
     Confirmation topic common to all agents in the workspace. It is used to send and receive confirmation messages that establish collaboration between agents.
 
@@ -29,27 +29,27 @@ This is an updated version of the planner node. In addition to the existing func
     The next move from the output word (action sequence) to be executed by the agent in order to fulfill the plan.
 
 #### Published Topics
-- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/src/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
+- `synchro_request` ([ltl_automaton_msg_srv/msg/SynchroRequest](/ltl_automaton_msg_srv/msg/SynchroRequest.msg))
 
     Request topic where each agent can publish or receive a message requesting help from other agents to complete an action. A request consists of a set of actions with respective regions where they must be completed and the time the action is supposed to start.
 
-- `agent0/reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/src/ltl_automaton_msg_srv/msg/SynchroReply.msg))
+- `agent0/reply` ([ltl_automaton_msg_srv/msg/SynchroReply](/ltl_automaton_msg_srv/msg/SynchroReply.msg))
 
     Reply topics where `agent` corresponds to the namespaces of agents present in the workspace. These topics are used to send replies to agents requesting assistance.
 
-- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/src/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
+- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
 
     A confirmation topic common to all agents in the workspace, used to send and receive confirmation messages establishing collaboration between agents.
 
 #### Services
-- `finished_collab` ([ltl_automaton_msg_srv/srv/FinishCollab](/src/ltl_automaton_msg_srv/srv/FinishCollab.srv))
+- `finished_collab` ([ltl_automaton_msg_srv/srv/FinishCollab](/ltl_automaton_msg_srv/srv/FinishCollab.srv))
 
     Service used to notify the planner when a collaborative action has been completed.
 
 #### Parameters
 - `motion_action_dictionary_path` (string)
 
-    Path to the agent model transition system definition. The file must be generated according to the action and motion models defined in the paper. A script to generate the action and motion dictionary used in the paper can be found [here](/src/ltl_automaton_synchronization/ltl_automaton_synchronization/transition_systems/generate_dictionaries_paper.py).
+    Path to the agent model transition system definition. The file must be generated according to the action and motion models defined in the paper. A script to generate the action and motion dictionary used in the paper can be found [here](/ltl_automaton_synchronization/ltl_automaton_synchronization/transition_systems/generate_dictionaries_paper.py).
 
 - `agents` (array of strings, default: [''])
 
@@ -74,7 +74,7 @@ This node is responsible for completing the actions assigned to the agent. It al
 
     The next move from the output word (action sequence) to be executed by the agent in order to fulfill the plan.
 
-- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/src/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
+- `synchro_confirm` ([ltl_automaton_msg_srv/msg/SynchroConfirm](/ltl_automaton_msg_srv/msg/SynchroConfirm.msg))
 
     A confirmation topic common to all agents in the workspace, used to send and receive confirmation messages establishing collaboration between agents.
 
@@ -90,14 +90,14 @@ This node is responsible for completing the actions assigned to the agent. It al
 
 - `/qualisys/obstacle/pose` ([geometry_msgs/msg/PoseStamped](https://docs.ros2.org/foxy/api/geometry_msgs/msg/PoseStamped.html))
 
-    Topics related to obstacles in the workspace (both agents and other obstacles). These poses are retrieved for the [Model Predictive Controllers (MPC)](/src/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/) developed.
+    Topics related to obstacles in the workspace (both agents and other obstacles). These poses are retrieved for the [Model Predictive Controllers (MPC)](/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/) developed.
 
 - `/qualisys/curr_agent/pose` ([geometry_msgs/msg/PoseStamped](https://docs.ros2.org/foxy/api/geometry_msgs/msg/PoseStamped.html))
 
-    Topic for retrieving the pose of `curr_agent`, used by the [Model Predictive Controllers (MPC)](/src/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/).
+    Topic for retrieving the pose of `curr_agent`, used by the [Model Predictive Controllers (MPC)](/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/).
 
 #### Published Topics
-- `ts_state` ([ltl_automaton_msg_srv/msg/TransitionSystemStateStamped](/src/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
+- `ts_state` ([ltl_automaton_msg_srv/msg/TransitionSystemStateStamped](/ltl_automaton_msg_srv/msg/TransitionSystemStateStamped.msg))
 
     Agent TS state topic, composed of a list of states from the different models within the action model. The planner node receives this topic to update the next action and the set of possible states.
 
@@ -111,12 +111,12 @@ This node is responsible for completing the actions assigned to the agent. It al
 
 - `curr_agent/cmd_vel` ([geometry_msgs/msg/Twist](https://docs.ros2.org/foxy/api/geometry_msgs/msg/Twist.html))
 
-    Topic used to publish the command velocity generated by the [Model Predictive Controllers (MPC)](/src/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/) developed for the robots in the lab.
+    Topic used to publish the command velocity generated by the [Model Predictive Controllers (MPC)](/ltl_automaton_synchronization/ltl_automaton_synchronization/waypoint_chaser/) developed for the robots in the lab.
 
 #### Parameters
 - `motion_action_dictionary_path` (string, default: '')
 
-    Path to the agent model transition system definition. The file must be generated according to the action and motion models defined in the paper. A script to generate the action and motion dictionary can be found [here](/src/ltl_automaton_synchronization/ltl_automaton_synchronization/transition_systems/generate_dictionaries_paper.py).
+    Path to the agent model transition system definition. The file must be generated according to the action and motion models defined in the paper. A script to generate the action and motion dictionary can be found [here](/ltl_automaton_synchronization/ltl_automaton_synchronization/transition_systems/generate_dictionaries_paper.py).
 
 - `obstacles_dictionary_path` (string, default: '')
 
