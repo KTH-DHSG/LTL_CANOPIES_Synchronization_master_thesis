@@ -43,7 +43,7 @@ Planner node. Build a product graph from a given transition system and LTL formu
 
     Prefix plan (also called prefix word), the action sequence to be carried out once by the agent after planning.
 
-- `suffix_plan` ([ltl_automaton_msgs/LTLPlan](/ltl_automaton_msg_srv/msg/LTLPlan.msg))
+- `suffix_plan` ([ltl_automaton_msg_srv/msg/LTLPlan](/ltl_automaton_msg_srv/msg/LTLPlan.msg))
     
     Suffix plan (also called suffix word), the action sequence to be carried out repeatively after the prefix plan.
     
@@ -104,5 +104,5 @@ As the final transition system, each individual action model transition system i
 More information about the transition system can be found in the corresponding [documentation page](/documentation/Transition-System-Definition.md)
 
 #### Plugins
-A plugin system allows for integrating more feature to the planner node (notably used by the Human-In-the-Loop mixed initiative controller). Details on the plugin can be found on the [documentation page](../../../documentation/Planner-Plugin.md)
+A plugin system allows for integrating more feature to the planner node (notably used by the Human-In-the-Loop mixed initiative controller). Details on the plugin can be found on the [documentation page](/documentation/Planner-Plugin.md)
 
